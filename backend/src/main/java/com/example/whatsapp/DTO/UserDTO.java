@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
+
     @NotBlank
     private String username;
 
@@ -19,4 +20,7 @@ public class UserDTO {
 
     private String name;
     private String statusMessage;
+    private String profilePicture;  // URL or file path
+    private Boolean isOnline;       // true / false
+    private String accountType;     // e.g., "standard", "business"
 }

@@ -4,6 +4,7 @@ import com.example.whatsapp.DTO.UserDTO;
 import com.example.whatsapp.Entity.User;
 import com.example.whatsapp.Payload.ApiResponse;
 import com.example.whatsapp.Service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +27,35 @@ public class UserController {
     }
     //create
     @PostMapping
-    public ResponseEntity<ApiResponse<User>> createUser(@RequestBody User user) {
+    public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody UserDTO userDTO) {
+        User user = User.builder()
+                .username(userDTO.getUsername())
+                .phoneNumber(userDTO.getPhoneNumber())
+                .password(userDTO.getPassword())   // 👈 must map here
+                .name(userDTO.getName())
+                .statusMessage(userDTO.getStatusMessage())
+                .profilePicture(userDTO.getProfilePicture())
+                .isOnline(userDTO.getIsOnline())
+                .accountType(userDTO.getAccountType())
+                .build();
+
         User savedUser = userService.createUser(user);
         return ResponseEntity.ok(new ApiResponse<>("User created successfully", savedUser));
     }
     //update
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<User>> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO userDTO) {
+
+        return userService.updateUser(id, userDTO)
+                .map(updatedUser -> ResponseEntity.ok(
+                        new ApiResponse<>("User updated successfully", updatedUser)))
+                .orElse(ResponseEntity.status(404)
+                        .body(new ApiResponse<>("User not found", null)));
+    }
+
+
 
     //delete
     @DeleteMapping("/{id}")
