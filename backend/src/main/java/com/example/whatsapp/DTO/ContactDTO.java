@@ -6,8 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MessageDTO {
-    private Long chatId;
-    private Long senderId;
-    private String content;
+public class ContactDTO {
+    private Long contactId;  // user to add
+    private String alias;
 }
