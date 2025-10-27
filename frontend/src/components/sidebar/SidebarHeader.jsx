@@ -1,11 +1,15 @@
-// components/sidebar/SidebarHeader.jsx
+// src/components/sidebar/SidebarHeader.jsx
+import React from "react";
+import { Plus, MoreVertical } from "lucide-react";
+
+
 export default function SidebarHeader() {
     return (
-        <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-green-600 font-bold text-xl">WhatsApp</h1>
-            <div className="flex space-x-2">
-                <button className="p-2">➕</button>
-                <button className="p-2">⋮</button>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h1 className="text-xl font-semibold text-green-600">WhatsApp</h1>
+            <div className="flex space-x-4 text-gray-600">
+                <Plus className="w-5 h-5 cursor-pointer" />
+                <MoreVertical className="w-5 h-5 cursor-pointer" />
             </div>
         </div>
     );
