@@ -15,15 +15,15 @@ export default function Signup() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async e => {
-        e.preventDefault ();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
         try {
             const res = await axios.post("http://localhost:8080/api/users", {
                 username: form.username,
                 email: form.email,
                 password: form.password,
-                phoneNumber: form.phoneNumber
+                phoneNumber: form.phoneNumber,
             });
 
             setMessage("✅ User registered successfully!");
@@ -88,7 +88,7 @@ export default function Signup() {
                 <p className="text-sm text-center mt-4">
                     Already have an account?{" "}
                     <Link to="/" className="text-green-500 hover:underline">
-                    Login
+                        Login
                     </Link>
                 </p>
             </div>

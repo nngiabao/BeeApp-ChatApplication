@@ -24,12 +24,12 @@ export default function Login() {
                 password: form.password,
             });
 
-            setMessage("✅ User registered successfully!");
+            setMessage("✅ Login successful!");
             console.log("Response:", res.data);
-            alert("✅ User registered successfully!");
+            alert("✅ Login successful!");
         } catch (err) {
-            console.error("Error registering user:", err);
-            setMessage("❌ Registration failed. Check console for details.");
+            console.error("Error logging in:", err);
+            setMessage("❌ Login failed. Check console for details.");
         }
     };
 
@@ -87,9 +87,11 @@ export default function Login() {
                         Login
                     </button>
                 </form>
+
                 {message && (
                     <p className="text-sm text-center mt-4 text-gray-700">{message}</p>
                 )}
+
                 <p className="text-sm mt-6">
                     Don’t have an account?{" "}
                     <a href="/signup" className="text-green-600 hover:underline">
