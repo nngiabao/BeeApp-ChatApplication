@@ -1,20 +1,20 @@
-// components/sidebar/ChatList.jsx
+// src/components/sidebar/ChatList.jsx
+import React from "react";
 import ChatListItem from "./ChatListItem";
 
 
-const sampleChats = [
-    { name: "Saurabh csu india", lastMessage: "😁", time: "thứ năm" },
-    { name: "Cis-600 Maao", lastMessage: "Yes sir", time: "thứ tư" },
-    { name: "Charan", lastMessage: "No bro", time: "thứ tư" },
-    { name: "Sri", lastMessage: "Ok bro", time: "chủ nhật" },
-];
-
-
 export default function ChatList() {
+    const chats = [
+        { id: 1, name: "Karin Cis600", message: "what happened bro", time: "12:03" },
+        { id: 2, name: "Sai CIS600", message: "Got it bro", time: "Yesterday" },
+        { id: 3, name: "Saurabh csu india", message: "Wassup bro", time: "Saturday" },
+    ];
+
+
     return (
         <div className="flex-1 overflow-y-auto">
-            {sampleChats.map((chat, index) => (
-                <ChatListItem key={index} {...chat} />
+            {chats.map((chat) => (
+                <ChatListItem key={chat.id} chat={chat} />
             ))}
         </div>
     );
