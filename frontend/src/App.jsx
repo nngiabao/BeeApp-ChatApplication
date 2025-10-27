@@ -1,17 +1,19 @@
-// App.jsx
-import Sidebar from "./components/sidebar/Sidebar";
-import ChatWindow from "./components/chat/ChatWindow";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import Home from "./components/chat/ChatWindow.jsx";
 
-
-export default function App() {
+function App() {
     return (
-        <div className="h-screen flex">
-            {/* Left sidebar (chats list, search, filters) */}
-            <Sidebar />
-
-
-            {/* Right chat window (header, messages, input) */}
-            <ChatWindow />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/home" element={<Home />} />
+            </Routes>
+        </Router>
     );
 }
+
+export default App;

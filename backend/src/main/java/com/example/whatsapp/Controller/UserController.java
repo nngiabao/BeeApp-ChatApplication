@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,7 +21,7 @@ public class UserController {
     //private final UserService userService;
     //=> inject
     private final UserService userService;
-
+    @CrossOrigin(origins = "http://localhost:5174")
     @GetMapping
     public ResponseEntity<ApiResponse<List<User>>> getUsers() {
         List<User> users = userService.getAllUsers();
@@ -83,4 +85,28 @@ public class UserController {
                 .orElse(ResponseEntity.status(404).body(new ApiResponse<>("User not found", null)));
     }
 
+    //login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User users) {
+        Optional<User> userOptional = userService.getUserByUsername(users.getUsername());
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        User user = userOptional.get();
+
+        if (user.getPassword() == null || !user.getPassword().equals(users.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Incorrect password"));
+        }
+
+        // For now, return basic info (no JWT)
+        return ResponseEntity.ok("Login successful for user: " + user.getUsername());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        // You could invalidate a session or token here later
+        return ResponseEntity.ok("Logout successful");
+    }
 }
