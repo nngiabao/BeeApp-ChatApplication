@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IoIosLock } from "react-icons/io";
 import { FaWhatsapp } from "react-icons/fa";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // for navigation after login
 
 export default function Login() {
     const [form, setForm] = useState({
@@ -10,6 +11,7 @@ export default function Login() {
     });
 
     const [message, setMessage] = useState("");
+    const navigate = useNavigate(); // hook for navigation
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,18 +20,25 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log("Logging in with:", form);
+
         try {
             const res = await axios.post("http://localhost:8080/api/users/login", {
                 username: form.username,
                 password: form.password,
             });
 
-            setMessage("✅ Login successful!");
-            console.log("Response:", res.data);
-            alert("✅ Login successful!");
+            console.log("✅ Response:", res.data);
+            setMessage("Login successful!");
+
+            //Navigate to chat/dashboard, passing username
+            navigate("/home", { state: { username: form.username } });
         } catch (err) {
             console.error("Error logging in:", err);
-            setMessage("❌ Login failed. Check console for details.");
+            if (err.response?.status === 400) {
+                setMessage("Invalid username or password.");
+            } else {
+                setMessage("Server unreachable. Check backend connection.");
+            }
         }
     };
 
@@ -38,18 +47,18 @@ export default function Login() {
             {/* Logo */}
             <div className="absolute top-8 left-10 flex items-center space-x-2">
                 <FaWhatsapp className="text-green-500 text-3xl" />
-                <span className="text-xl font-semibold text-gray-800">WhatsApp</span>
+                <span className="text-xl font-semibold text-gray-800">BeeApp</span>
             </div>
 
             {/* Card */}
             <div className="bg-white p-8 rounded-2xl shadow border max-w-md w-full text-center">
                 <h2 className="text-2xl font-semibold mb-4">Login to WhatsApp</h2>
                 <p className="text-gray-600 text-sm mb-6">
-                    Enter your username and password to continue.
-                    <a href="#" className="text-green-600 ml-1 underline">
+                    Enter your username and password to continue.{" "}
+                    <a href="#" className="text-green-600 underline">
                         Privacy Policy
-                    </a>
-                    . By logging in, you accept the{" "}
+                    </a>{" "}
+                    &{" "}
                     <a href="#" className="text-green-600 underline">
                         Terms of Service
                     </a>
