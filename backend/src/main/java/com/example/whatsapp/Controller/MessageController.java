@@ -19,19 +19,6 @@ public class MessageController {
     private final MessageService messageService;
 
     //send messgae
-    @PostMapping
-    public ResponseEntity<ApiResponse<Message>> sendMessage(@RequestBody MessageDTO dto) {
-        Message message = Message.builder()
-                .chatId(dto.getChatId())
-                .senderId(dto.getSenderId())
-                .content(dto.getContent())
-                .sentAt(LocalDateTime.now())  // set timestamp here
-                .status("SENT")               // default status
-                .build();
-
-        Message saved = messageService.sendMessage(message);
-        return ResponseEntity.ok(new ApiResponse<>("Message sent successfully", saved));
-    }
 
     @GetMapping("/{chatId}")
     public ResponseEntity<ApiResponse<List<Message>>> getChatMessages(@PathVariable Long chatId) {
