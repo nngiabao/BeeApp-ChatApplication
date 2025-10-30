@@ -1,23 +1,29 @@
-// src/components/chat/MessageInput.jsx
 import React, { useState } from "react";
-import { Smile, Paperclip, Mic } from "lucide-react";
+import { Smile, Paperclip, Send } from "lucide-react";
 
-
-export default function MessageInput() {
+export default function MessageInput({ onSend }) {
     const [input, setInput] = useState("");
 
-
-    const handleSend = () => {
+    const handleSend = (e) => {
+        e.preventDefault();
         if (!input.trim()) return;
-        console.log("Sent:", input);
-        setInput("");
+
+        // Send the message through WebSocket
+        if (onSend) {
+            onSend(input.trim());
+        }
+
+        setInput(""); // Clear after send
     };
 
-
     return (
-        <div className="p-4 bg-[#f0f2f5] border-t border-gray-300 flex items-center space-x-3">
+        <form
+            onSubmit={handleSend}
+            className="p-4 bg-[#f0f2f5] border-t border-gray-300 flex items-center space-x-3"
+        >
             <Smile className="w-6 h-6 text-gray-600 cursor-pointer" />
             <Paperclip className="w-6 h-6 text-gray-600 cursor-pointer" />
+
             <input
                 type="text"
                 placeholder="Type a message"
@@ -25,9 +31,10 @@ export default function MessageInput() {
                 onChange={(e) => setInput(e.target.value)}
                 className="flex-1 p-2 border rounded-full focus:outline-none focus:ring focus:ring-green-200"
             />
-            <button onClick={handleSend}>
-                <Mic className="w-6 h-6 text-gray-600 cursor-pointer" />
+
+            <button type="submit">
+                <Send className="w-6 h-6 text-green-600 hover:text-green-700 cursor-pointer" />
             </button>
-        </div>
+        </form>
     );
 }

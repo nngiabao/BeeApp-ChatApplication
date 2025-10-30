@@ -14,9 +14,10 @@ export default function Sidebar() {
                 <SidebarSearch />
                 <SidebarFilters />
                 <ChatList />
+                {/*
                 <div className="text-sm text-green-600 text-center py-3 border-t border-gray-200 hover:bg-green-50 cursor-pointer">
-                    💬 Get WhatsApp for Windows
-                </div>
+                    💬 Happy chatting time
+                </div>*/}
             </div>
         </div>
     );

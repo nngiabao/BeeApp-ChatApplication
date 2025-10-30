@@ -19,7 +19,7 @@ export default function Signup() {
         e.preventDefault();
 
         try {
-            const res = await axios.post("http://localhost:8080/api/users", {
+            const res = await axios.post("http://localhost:8080/users", {
                 username: form.username,
                 email: form.email,
                 password: form.password,
@@ -30,14 +30,14 @@ export default function Signup() {
             console.log("Response:", res.data);
         } catch (err) {
             console.error("Error registering user:", err);
-            setMessage("❌ Registration failed. Check console for details.");
+            setMessage("Registration failed. Check console for details.");
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen bg-[#f0ebe3]">
             <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-center">Sign Up to BeeApp</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input

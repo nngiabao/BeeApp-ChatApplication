@@ -22,15 +22,13 @@ export default function Login() {
         console.log("Logging in with:", form);
 
         try {
-            const res = await axios.post("http://localhost:8080/api/users/login", {
+            const res = await axios.post("http://localhost:8080/users/login", {
                 username: form.username,
                 password: form.password,
             });
-
-            console.log("✅ Response:", res.data);
             setMessage("Login successful!");
 
-            //Navigate to chat/dashboard, passing username
+            //Navigate to chat/home, passing username
             navigate("/home", { state: { username: form.username } });
         } catch (err) {
             console.error("Error logging in:", err);
@@ -46,24 +44,13 @@ export default function Login() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0ebe3]">
             {/* Logo */}
             <div className="absolute top-8 left-10 flex items-center space-x-2">
-                <FaWhatsapp className="text-green-500 text-3xl" />
+                { /* <FaWhatsapp className="text-green-500 text-3xl" />*/}
                 <span className="text-xl font-semibold text-gray-800">BeeApp</span>
             </div>
 
             {/* Card */}
             <div className="bg-white p-8 rounded-2xl shadow border max-w-md w-full text-center">
-                <h2 className="text-2xl font-semibold mb-4">Login to WhatsApp</h2>
-                <p className="text-gray-600 text-sm mb-6">
-                    Enter your username and password to continue.{" "}
-                    <a href="#" className="text-green-600 underline">
-                        Privacy Policy
-                    </a>{" "}
-                    &{" "}
-                    <a href="#" className="text-green-600 underline">
-                        Terms of Service
-                    </a>
-                    .
-                </p>
+                <h2 className="text-2xl font-semibold mb-4">Login to BeeApp</h2>
 
                 <form className="space-y-4" onSubmit={handleSubmit}>
                     <input

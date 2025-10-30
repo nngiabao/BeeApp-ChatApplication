@@ -10,17 +10,10 @@ export default function SidebarNav() {
                     className="w-6 h-6 text-green-600 cursor-pointer hover:text-green-700"
                     title="Chats"
                 />
-                <CircleDashed
-                    className="w-6 h-6 text-gray-500 cursor-pointer hover:text-green-600"
-                    title="Status"
-                />
+
                 <Users
                     className="w-6 h-6 text-gray-500 cursor-pointer hover:text-green-600"
                     title="Communities"
-                />
-                <Layers
-                    className="w-6 h-6 text-gray-500 cursor-pointer hover:text-green-600"
-                    title="Channels"
                 />
             </div>
 
