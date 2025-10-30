@@ -8,12 +8,12 @@ export default function ChatHeader() {
         <div className="flex items-center justify-between p-4 bg-[#f0f2f5] border-b border-gray-300">
             <div className="flex items-center space-x-3">
                 <img
-                    src="https://i.pravatar.cc/50?img=2"
-                    alt="Sai"
+                    src="https://i.pravatar.cc/50?u=Anna"
+                    alt="Anna"
                     className="w-10 h-10 rounded-full"
                 />
                 <div>
-                    <h2 className="font-semibold text-gray-800">Sai CIS600</h2>
+                    <h2 className="font-semibold text-gray-800">Anna</h2>
                     <p className="text-xs text-gray-500">online</p>
                 </div>
             </div>

@@ -5,9 +5,7 @@ import ChatListItem from "./ChatListItem";
 
 export default function ChatList() {
     const chats = [
-        { id: 1, name: "Karin Cis600", message: "what happened bro", time: "12:03" },
-        { id: 2, name: "Sai CIS600", message: "Got it bro", time: "Yesterday" },
-        { id: 3, name: "Saurabh csu india", message: "Wassup bro", time: "Saturday" },
+        { id: 1, name: "Anna", message: "heheheh", time: "12:03" }
     ];
 
 

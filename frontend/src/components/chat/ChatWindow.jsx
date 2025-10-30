@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { connectWebSocket, sendMessage } from "../../utils/socket";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import MessageInput from "./MessageInput";
+import { useLocation } from "react-router-dom";
 
 export default function ChatWindow() {
     const [messages, setMessages] = useState([]);
