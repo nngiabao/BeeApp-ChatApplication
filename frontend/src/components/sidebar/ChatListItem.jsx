@@ -13,9 +13,9 @@ export default function ChatListItem({ chat }) {
             <div className="flex-1">
                 <div className="flex justify-between">
                     <h2 className="font-medium text-gray-800">{chat.name}</h2>
-                    <span className="text-xs text-gray-500">{chat.time}</span>
+                    <span className="text-xs text-gray-500">{chat.title}</span>
                 </div>
-                <p className="text-sm text-gray-500 truncate">{chat.message}</p>
+                <p className="text-sm text-gray-500 truncate">{chat.data}</p>
             </div>
         </div>
     );
