@@ -3,7 +3,7 @@ import React from "react";
 
 
 export default function SidebarFilters() {
-    const filters = ["All", "Unread", "Favorites", "Groups"];
+    const filters = ["All", "Unread", "Groups"];
     return (
         <div className="flex space-x-2 px-4 py-2 border-b border-gray-100">
             {filters.map((filter) => (
