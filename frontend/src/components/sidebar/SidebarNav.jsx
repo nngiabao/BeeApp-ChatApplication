@@ -25,6 +25,7 @@ export default function SidebarNav({activeTab, setActiveTab}) {
                 <div>
                     <Settings
                         className="w-6 h-6 text-gray-500 cursor-pointer hover:text-green-600"
+                        onClick={() => setActiveTab("settings")}
                         title="Settings"
                     />
                 </div>
