@@ -1,15 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import ContactHeader from "./Header";
 import QuickActions from "./QuickActions";
 import ContactSection from "./ContactSection";
-
+import AddContactPanel from "./AddContact";
+import AddGroupPanel from "./AddGroup";
 
 export default function ContactList() {
-    return (
-        <div className="w-full h-full bg-white p-4 overflow-y-auto">
-            <ContactHeader />
-            <QuickActions />
-            <ContactSection />
-        </div>
-    );
+    const [activePanel, setActivePanel] = useState("list"); // 'list', 'addContact', 'addGroup'
+
+    const renderPanel = () => {
+        switch (activePanel) {
+            case "addContact":
+                return <AddContactPanel onBack={() => setActivePanel("list")} />;
+            case "addGroup":
+                return <AddGroupPanel onBack={() => setActivePanel("list")} />;
+            default:
+                return (
+                    <div>
+                        <ContactHeader />
+                        <QuickActions
+                            onAddContact={() => setActivePanel("addContact")}
+                            onAddGroup={() => setActivePanel("addGroup")}
+                        />
+                        <ContactSection />
+                    </div>
+                );
+        }
+    };
+
+    return <div className="w-full h-full bg-white p-4 overflow-y-auto">{renderPanel()}</div>;
 }
