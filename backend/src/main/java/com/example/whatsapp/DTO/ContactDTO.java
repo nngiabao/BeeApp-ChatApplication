@@ -1,12 +1,19 @@
 package com.example.whatsapp.DTO;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ContactDTO {
-    private Long contactId;  // user to add
+    private Long id;
+    private Long userId;
+    private Long contactId;
     private String alias;
+    private boolean isBlocked;
+    private LocalDateTime createdAt;
 }

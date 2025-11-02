@@ -2,11 +2,10 @@ package com.example.whatsapp.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "contacts", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "contact_id"}))
+@Table(name = "contacts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,16 +15,19 @@ public class Contact {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;  // owner
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "contact_id", nullable = false)
-    private User contact;  // the contact user
+    @Column(name = "contact_id", nullable = false)
+    private Long contactId;
 
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(length = 255)
     private String alias;
-    private Boolean isBlocked = false;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "is_blocked", nullable = false)
+    private boolean isBlocked;
+
 }
