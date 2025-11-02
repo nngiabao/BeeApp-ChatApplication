@@ -52,7 +52,10 @@ public class UserService {
         }
         return false;
     }
-
+    //find by phone or username
+    public Long getUserId(String lookUp) {
+        return userRepository.findUserIdByUsernameOrPhoneNumber(lookUp);
+    }
     //find by phone
     public Optional<User> getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber);
