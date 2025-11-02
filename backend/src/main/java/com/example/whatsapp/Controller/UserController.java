@@ -9,31 +9,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     //private final UserService userService;
     //=> inject
     private final UserService userService;
-    @CrossOrigin(origins = "http://localhost:5174")
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<User>>> getUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(new ApiResponse<>("Users fetched successfully", users));
     }
+
     //create
     @PostMapping
     public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody UserDTO userDTO) {
         User user = User.builder()
                 .username(userDTO.getUsername())
                 .phoneNumber(userDTO.getPhoneNumber())
-                .password(userDTO.getPassword())   // 👈 must map here
+                .password(userDTO.getPassword())   // must map here
                 .name(userDTO.getName())
                 .statusMessage(userDTO.getStatusMessage())
                 .profilePicture(userDTO.getProfilePicture())
@@ -44,6 +43,7 @@ public class UserController {
         User savedUser = userService.createUser(user);
         return ResponseEntity.ok(new ApiResponse<>("User created successfully", savedUser));
     }
+
     //update
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<User>> updateUser(
@@ -56,7 +56,6 @@ public class UserController {
                 .orElse(ResponseEntity.status(404)
                         .body(new ApiResponse<>("User not found", null)));
     }
-
 
 
     //delete
@@ -99,9 +98,13 @@ public class UserController {
         if (user.getPassword() == null || !user.getPassword().equals(users.getPassword())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Incorrect password"));
         }
+        //no JWT
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Login successful");
+        response.put("user", user); // assuming 'user' is your User entity or DTO
 
-        // For now, return basic info (no JWT)
-        return ResponseEntity.ok("Login successful for user: " + user.getUsername());
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/logout")
