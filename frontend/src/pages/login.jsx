@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { IoIosLock } from "react-icons/io";
-import { FaWhatsapp } from "react-icons/fa";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // for navigation after login
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../components/context/UserContext"; // import your context
 
 export default function Login() {
-    const [form, setForm] = useState({
-        username: "",
-        password: "",
-    });
-
+    const [form, setForm] = useState({ username: "", password: "" });
     const [message, setMessage] = useState("");
-    const navigate = useNavigate(); // hook for navigation
+    const navigate = useNavigate();
+    const { setUser } = useUser(); // use context
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,10 +23,14 @@ export default function Login() {
                 username: form.username,
                 password: form.password,
             });
-            setMessage("Login successful!");
 
-            //Navigate to chat/home, passing username
-            navigate("/home", { state: { username: form.username } });
+            const userData = res.data.user; //JSON object
+            setUser(userData);
+            console.log("Stored user object:", userData);
+
+            setMessage(res.data.message);
+            // navigate to home without needing to pass state
+            navigate("/home");
         } catch (err) {
             console.error("Error logging in:", err);
             if (err.response?.status === 400) {
@@ -44,7 +45,6 @@ export default function Login() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0ebe3]">
             {/* Logo */}
             <div className="absolute top-8 left-10 flex items-center space-x-2">
-                { /* <FaWhatsapp className="text-green-500 text-3xl" />*/}
                 <span className="text-xl font-semibold text-gray-800">BeeApp</span>
             </div>
 
