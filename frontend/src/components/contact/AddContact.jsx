@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useUser } from "../context/UserContext";
+import { useContactList } from "../context/ContactContext"; // ✅ import context
 import { UserPlus, ArrowLeft } from "lucide-react";
 import axios from "axios";
 
 export default function AddContactPanel({ onBack }) {
     const { user } = useUser();
-    const [contact, setContact] = useState({ name: "", phone: "" });
+    const { addContact } = useContactList(); // ✅ get addContact from context
+
+    const [contact, setContact] = useState({ name: "", lookUp: "" });
     const [message, setMessage] = useState("");
 
     const handleChange = (e) => {
@@ -16,13 +19,22 @@ export default function AddContactPanel({ onBack }) {
         e.preventDefault();
         try {
             const res = await axios.post(`http://localhost:8080/contacts/add`, {
-                ownerUsername: user.username, // associate contact with current user
-                contactName: contact.name,
-                contactPhone: contact.phone,
+                userId: user.id, // from context
+                lookupValue: contact.lookUp,
+                alias: contact.name
             });
-            setMessage("✅ Contact added successfully!");
-            setContact({ name: "", phone: "" });
+
             console.log("Response:", res.data);
+
+            // ✅ If backend sends new contact in response, add it to global context
+            if (res.data && res.data.data) {
+                addContact(res.data.data); // assumes your backend wraps it in { message, data: { ... } }
+            } else if (res.data && res.data.id) {
+                addContact(res.data); // if backend returns raw contact
+            }
+
+            setMessage("✅ Contact added successfully!");
+            setContact({ name: "", lookUp: "" });
         } catch (error) {
             console.error("Error adding contact:", error);
             setMessage("❌ Failed to add contact. Try again.");
@@ -31,7 +43,7 @@ export default function AddContactPanel({ onBack }) {
 
     return (
         <div className="p-6 bg-white h-full">
-            {/* Header with back button */}
+            {/* Header */}
             <div className="flex items-center gap-3 mb-4">
                 <ArrowLeft
                     onClick={onBack}
@@ -55,9 +67,9 @@ export default function AddContactPanel({ onBack }) {
 
                 <input
                     type="text"
-                    name="phone"
-                    placeholder="Contact Phone"
-                    value={contact.phone}
+                    name="lookUp"
+                    placeholder="Contact Phone or Username"
+                    value={contact.lookUp}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                     required
