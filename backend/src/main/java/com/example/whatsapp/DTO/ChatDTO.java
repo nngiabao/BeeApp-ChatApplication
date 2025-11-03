@@ -1,19 +1,18 @@
 package com.example.whatsapp.DTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ChatDTO {
     private Long id;
-    private String name;
-    private boolean isGroup;
+    private String type;
+    private String title;
     private Long createdBy;
     private LocalDateTime createdAt;
-    private List<MessageDTO> messages;
+    private String lastMessage;
+    private LocalDateTime lastMessageTime;
 }

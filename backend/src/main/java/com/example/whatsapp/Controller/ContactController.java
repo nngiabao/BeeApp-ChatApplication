@@ -14,41 +14,39 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
 @RestController
 @RequestMapping("/contacts")
 @RequiredArgsConstructor
 public class ContactController {
 
     private final ContactService contactService;
-
+    //we dont need to use this one
     @GetMapping
     public ResponseEntity<ApiResponse<List<Contact>>> getAllContacts() {
         List<Contact> contacts = contactService.getAllContacts();
         return ResponseEntity.ok(new ApiResponse<>("Contacts fetched successfully", contacts));
     }
-
-    //find by id
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Contact>> getUserById(@PathVariable Long id) {
-        return contactService.getContactById(id)
-                .map(contact -> ResponseEntity.ok(new ApiResponse<>("Contact found", contact)))
-                .orElse(ResponseEntity.status(404).body(new ApiResponse<>("Contact not found", null)));
+    //load the contact by id
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<Contact>>> getAllContactsById(@PathVariable Long userId) {
+        List<Contact> contacts = contactService.getContactsByUserId(userId);
+        return ResponseEntity.ok(new ApiResponse<>("Contacts fetched successfully", contacts));
     }
 
-    //create
-    @PostMapping
-    public ResponseEntity<ApiResponse<Contact>> createContact(@Valid @RequestBody ContactDTO contactDTO) {
-        Contact contact = Contact.builder()
-                .userId(contactDTO.getUserId())
-                .contactId(contactDTO.getContactId())
-                .alias(contactDTO.getAlias())
-                .isBlocked(false)
-                .createdAt(LocalDateTime.now())
-                .build();
 
-        Contact savedContact = contactService.createContact(contact);
-        return ResponseEntity.ok(new ApiResponse<>("Contact created successfully", savedContact));
+    @PostMapping("/add")
+    public ResponseEntity<?> addContactByLookup(@RequestBody Map<String, String> request) {
+        Long userId = Long.parseLong(request.get("userId"));
+        String lookupValue = request.get("lookupValue");
+        String alias = request.get("name");
+        try {
+            //
+            Contact contact = contactService.createContact(userId, lookupValue, alias);
+            return ResponseEntity.ok(contact);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(404)
+                    .body(new ApiResponse<>("Contact not found", null));
+        }
     }
 
     //update
