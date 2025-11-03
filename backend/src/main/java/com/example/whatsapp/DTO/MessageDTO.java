@@ -1,18 +1,19 @@
 package com.example.whatsapp.DTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class MessageDTO {
-    private Integer id;
-    private String type;         // text, image, video...
-    private LocalDateTime createdAt;
-    private String title;        // message title or body
-    private Integer createdBy;   // user_id foreign key
+    private Long id;
+    private Long chatId;
+    private Long senderId;
+    private String content;
+    private String status;
+    private String messageType;
+    private String mediaUrl;
+    private LocalDateTime sentAt;
 }
