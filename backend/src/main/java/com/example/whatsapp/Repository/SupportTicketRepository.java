@@ -7,6 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.*;
 
 public interface SupportTicketRepository extends JpaRepository<TicketSupport, Long> {
-    public List<TicketSupport> findByUsername(String username);
-    public List<TicketSupport> findById(Long id);
+    public List<TicketSupport> findByUserId(Long id);
 }

@@ -27,7 +27,7 @@ public class SupportService {
 
     //Get tickets by user
     public List<TicketSupport> getTicketsByUserId(Long userId) {
-        return supportTicketRepository.findById(userId);
+        return supportTicketRepository.findByUserId(userId);
     }
 
     //Create new support ticket
