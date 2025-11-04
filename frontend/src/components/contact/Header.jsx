@@ -6,8 +6,7 @@ export default function ContactHeader() {
         <div>
             {/* Header */}
             <div className="flex items-center space-x-2 mb-4">
-                <button className="text-green-600 hover:text-green-700">←</button>
-                <h1 className="text-lg font-semibold">New chat</h1>
+                <h1 className="text-xl font-semibold text-red-300">Contacts</h1>
             </div>
 
 
