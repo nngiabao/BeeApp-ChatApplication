@@ -5,6 +5,7 @@ import com.example.whatsapp.DTO.UserDTO;
 import com.example.whatsapp.Entity.Contact;
 import com.example.whatsapp.Entity.User;
 import com.example.whatsapp.Repository.ContactRepository;
+import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,22 +18,46 @@ import java.util.Optional;
 public class ContactService {
 
     private final ContactRepository contactRepository;
+    private final UserRepository userRepository;
 
     //get all contacts
     public List<Contact> getAllContacts() {
         return contactRepository.findAll();
     }
 
-    public List<Contact> getContactsByUserId(Long userId) {
-        return contactRepository.findByUserId(userId);
+    //Get contact by ID
+    public List<Contact> getContactsByUserId(Long id) {
+        return contactRepository.findByUserId(id);
     }
-
     //Create new contact
-    public Contact createContact(Contact contact) {
-        contact.setCreatedAt(LocalDateTime.now());
-        if (contact.getAlias() == null) {
-            contact.setAlias(""); // default empty alias
+    public Contact createContact(Long userId, String lookupValue,String alias) {
+        //try to check username
+        Optional<User> foundUser = userRepository.findUserByUsername(lookupValue);
+        //then try to check phone number
+        if (foundUser.isEmpty()) {
+            foundUser = userRepository.findByPhoneNumber(lookupValue);
         }
+        if (foundUser.isEmpty()) {
+            throw new RuntimeException("No user found with that username or phone number");
+        }
+
+        Long contactId = foundUser.get().getId();
+
+        if (userId.equals(contactId)) {
+            throw new RuntimeException("You cannot add yourself as a contact.");
+        }
+        if (contactRepository.existsByUserIdAndContactId(userId, contactId)) {
+            throw new RuntimeException("This contact already exists.");
+        }
+
+        Contact contact = Contact.builder()
+                .userId(userId)
+                .contactId(contactId)
+                .alias(alias)
+                .createdAt(LocalDateTime.now())
+                .isBlocked(false)
+                .build();
+
         return contactRepository.save(contact);
     }
 
@@ -69,10 +94,7 @@ public class ContactService {
         return false;
     }
 
-    //Get contact by ID
-    public Optional<Contact> getContactById(Long id) {
-        return contactRepository.findById(id);
-    }
+
 
     //Find contact by user & contact ID pair (useful for checking if they already exist)
 

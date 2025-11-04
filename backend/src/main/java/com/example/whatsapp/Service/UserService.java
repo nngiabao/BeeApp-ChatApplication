@@ -52,10 +52,6 @@ public class UserService {
         }
         return false;
     }
-    //find by phone or username
-    public Long getUserId(String lookUp) {
-        return userRepository.findUserIdByUsernameOrPhoneNumber(lookUp);
-    }
     //find by phone
     public Optional<User> getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber);
@@ -69,5 +65,13 @@ public class UserService {
     //find by username => login
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findUserByUsername(username);
+    }
+
+    //set status or offline
+    public void setUserOnline(String username,boolean status) {
+        userRepository.findUserByUsername(username).ifPresent(user -> {
+            user.setIsOnline(status);
+            userRepository.save(user);
+        });
     }
 }

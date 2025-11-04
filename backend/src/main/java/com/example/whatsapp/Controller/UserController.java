@@ -88,7 +88,8 @@ public class UserController {
     //login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User users) {
-        Optional<User> userOptional = userService.getUserByUsername(users.getUsername());
+        String username = users.getUsername();
+        Optional<User> userOptional = userService.getUserByUsername(username);
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("User not found");
@@ -96,21 +97,25 @@ public class UserController {
 
         User user = userOptional.get();
 
-        if (user.getPassword() == null || !user.getPassword().equals(users.getPassword())) {
+        if (!user.getPassword().equals(users.getPassword())) {
+
             return ResponseEntity.badRequest().body(Map.of("message", "Incorrect password"));
         }
         //no JWT
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Login successful");
         response.put("user", user); // assuming 'user' is your User entity or DTO
-
+        //set online
+        userService.setUserOnline(username,true);
+        //
         return ResponseEntity.ok(response);
 
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(@RequestBody String username ) {
         // You could invalidate a session or token here later
+        userService.setUserOnline(username,false);
         return ResponseEntity.ok("Logout successful");
     }
 }
