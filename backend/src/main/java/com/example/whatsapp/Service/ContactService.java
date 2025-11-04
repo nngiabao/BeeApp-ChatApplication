@@ -93,8 +93,18 @@ public class ContactService {
         }
         return false;
     }
-
-
+    //unblock contact
+    public boolean unblockContact(Long id) {
+        //find contact exist or not ?
+        Contact contact = contactRepository.findById(id).orElse(null);
+        //
+        if (contact != null) {
+            contact.setBlocked(false);
+            contactRepository.save(contact);
+            return true;
+        }
+        return false;
+    }
 
     //Find contact by user & contact ID pair (useful for checking if they already exist)
 

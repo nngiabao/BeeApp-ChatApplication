@@ -44,4 +44,7 @@ public class ChatController {
                 .sentAt(savedMessage.getSentAt())
                 .build();
     }
+
+    //create new group chat
+
 }

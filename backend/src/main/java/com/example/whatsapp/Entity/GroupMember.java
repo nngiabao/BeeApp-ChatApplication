@@ -21,5 +21,5 @@ public class GroupMember {
     private Long userId;
 
     @Column(length = 10)
-    private String role; // "member" or "admin"
+    private String role; // "member" or "admin", "manager"
 }

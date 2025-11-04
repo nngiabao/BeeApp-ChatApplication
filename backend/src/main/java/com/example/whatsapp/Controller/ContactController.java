@@ -70,6 +70,15 @@ public class ContactController {
         return ResponseEntity.notFound().build();
     }
 
+    //unblock contact
+    @PutMapping("/unblock/{id}")
+    public ResponseEntity<ApiResponse<Contact>> unblockContact(@PathVariable Long id) {
+        if (contactService.unblockContact(id))
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
+    }
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
         if (contactService.deleteContact(id))
