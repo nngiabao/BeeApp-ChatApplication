@@ -4,6 +4,7 @@ import QuickActions from "./QuickActions";
 import ContactSection from "./ContactSection";
 import AddContactPanel from "./AddContact";
 import AddGroupPanel from "./AddGroup";
+import BlockContactsPanel from "./BlockedContacts";
 
 export default function ContactList() {
     const [activePanel, setActivePanel] = useState("list"); // 'list', 'addContact', 'addGroup'
@@ -14,6 +15,8 @@ export default function ContactList() {
                 return <AddContactPanel onBack={() => setActivePanel("list")} />;
             case "addGroup":
                 return <AddGroupPanel onBack={() => setActivePanel("list")} />;
+            case "blockedContacts":
+                return <BlockContactsPanel onBack={() => setActivePanel("list")} />;
             default:
                 return (
                     <div>
@@ -21,6 +24,7 @@ export default function ContactList() {
                         <QuickActions
                             onAddContact={() => setActivePanel("addContact")}
                             onAddGroup={() => setActivePanel("addGroup")}
+                            onBlockList={() => setActivePanel("blockedContacts")}
                         />
                         <ContactSection />
                     </div>

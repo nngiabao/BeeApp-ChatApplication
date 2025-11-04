@@ -4,7 +4,6 @@ import { useUser } from "./UserContext";
 
 const ContactListContext = createContext();
 
-// ✅ Provider Component
 export function ContactListProvider({ children }) {
     const { user } = useUser();
     const [contacts, setContacts] = useState([]);
@@ -13,13 +12,26 @@ export function ContactListProvider({ children }) {
     const [hasFetched, setHasFetched] = useState(false);
 
     useEffect(() => {
-        if (!user || hasFetched) return;
+        if (!user) {
+            setContacts([]);
+            localStorage.removeItem("contacts");
+            setHasFetched(false);
+            return;
+        }
 
         const fetchContacts = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`http://localhost:8080/contacts/user/${user.id}`);
-                const list = Array.isArray(res.data.data) ? res.data.data : [];
+                const res = await axios.get(
+                    `http://localhost:8080/contacts/user/${user.id}`
+                );
+                const list =
+                    Array.isArray(res.data?.data)
+                        ? res.data.data
+                        : Array.isArray(res.data)
+                            ? res.data
+                            : [];
+
                 setContacts(list);
                 setError(null);
                 setHasFetched(true);
@@ -32,11 +44,12 @@ export function ContactListProvider({ children }) {
             }
         };
 
+        // ✅ show cached contacts instantly, then refresh once
         const cached = localStorage.getItem("contacts");
-        if (cached) {
+        if (cached && !hasFetched) {
             setContacts(JSON.parse(cached));
-            setHasFetched(true);
-        } else {
+        }
+        if (!hasFetched) {
             fetchContacts();
         }
     }, [user, hasFetched]);
@@ -66,9 +79,9 @@ export function ContactListProvider({ children }) {
     );
 }
 
-// ✅ Custom hook to use this context easily
 export function useContactList() {
     const context = useContext(ContactListContext);
-    if (!context) throw new Error("useContactList must be used within a ContactListProvider");
+    if (!context)
+        throw new Error("useContactList must be used within a ContactListProvider");
     return context;
 }
