@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { ArrowLeft, X , ArrowRight} from "lucide-react";
+import { ArrowLeft, X, ArrowRight } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { useContactList } from "../context/ContactContext";
-import NewGroupPanel from "./AddGroupConfirmation.jsx"; //
+import NewGroupPanel from "./AddGroupConfirmation.jsx"; // your confirmation screen
 
 export default function AddGroupPanel({ onBack }) {
     const { user } = useUser();
@@ -10,17 +10,16 @@ export default function AddGroupPanel({ onBack }) {
 
     const [selected, setSelected] = useState([]);
     const [search, setSearch] = useState("");
-    const [step, setStep] = useState(1); // 1 = select members, 2 = group setup
+    const [step, setStep] = useState(1); // 1 = select members, 2 = confirmation
 
     if (loading) return <p className="text-gray-500">Loading contacts...</p>;
 
     const toggleSelect = (contact) => {
-        setSelected((prev) => {
-            if (prev.find((p) => p.id === contact.id)) {
-                return prev.filter((p) => p.id !== contact.id);
-            }
-            return [...prev, contact];
-        });
+        setSelected((prev) =>
+            prev.find((p) => p.id === contact.id)
+                ? prev.filter((p) => p.id !== contact.id)
+                : [...prev, contact]
+        );
     };
 
     const removeSelected = (id) => {
@@ -32,30 +31,50 @@ export default function AddGroupPanel({ onBack }) {
     );
 
     const handleNext = () => {
-        if (selected.length > 0) {
-            setStep(2);
+        if (selected.length > 0) setStep(2);
+    };
+
+    //Pass member IDs + group info to backend
+    const handleCreateGroup = async (groupData) => {
+        const memberIds = [user.id, ...selected.map((m) => m.id)];
+
+        const requestBody = {
+            groupName: groupData.groupName,
+            createdBy: user.id,
+            memberIds,
+        };
+
+        try {
+            const res = await fetch("http://localhost:8080/chats/group", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!res.ok) throw new Error("Failed to create group");
+            const data = await res.json();
+
+            console.log("Group created:", data);
+            alert("Group created successfully!");
+            onBack(); // go back or refresh list
+        } catch (err) {
+            console.error("Error creating group:", err);
+            alert("Error creating group.");
         }
     };
 
-    const handleCreateGroup = (groupData) => {
-        console.log("Creating group:", {
-            members: selected,
-            ...groupData,
-        });
-        // 🧩 TODO: Send this data to your backend API to create the group
-    };
-
-    // ✅ Step 2: show the new group setup screen
+    //show confirmation screen
     if (step === 2) {
         return (
             <NewGroupPanel
                 onBack={() => setStep(1)}
-                onCreate={handleCreateGroup}
+                onCreated={handleCreateGroup}
+                members={selected} //pass selected contacts
             />
         );
     }
 
-    // ✅ Step 1: Select members screen
+    //Step 1: select contacts
     return (
         <div className="w-full h-full bg-white p-4 overflow-y-auto flex flex-col">
             {/* Header */}
@@ -64,22 +83,19 @@ export default function AddGroupPanel({ onBack }) {
                     onClick={onBack}
                     className="text-green-600 hover:text-green-700"
                 >
-                    <ArrowLeft className="w-5 h-5"/>
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
                 <h1 className="text-lg font-semibold">Add group members</h1>
             </div>
 
-            {/* Selected Chips inside Search Bar */}
-            <div
-                className="flex flex-wrap items-center border px-3 py-2 mb-4 focus-within:ring-1 focus-within:ring-green-500">
+            {/* Selected Chips */}
+            <div className="flex flex-wrap items-center border px-3 py-2 mb-4 focus-within:ring-1 focus-within:ring-green-500">
                 {selected.map((contact) => (
                     <div
                         key={contact.id}
                         className="flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full mr-2 mb-1"
                     >
-                        <span className="text-sm font-medium">
-                            {contact.alias}
-                        </span>
+                        <span className="text-sm font-medium">{contact.alias}</span>
                         <X
                             className="w-4 h-4 ml-1 cursor-pointer"
                             onClick={() => removeSelected(contact.id)}
@@ -117,27 +133,24 @@ export default function AddGroupPanel({ onBack }) {
                                 {contact.alias}
                             </p>
                             <p className="text-sm text-gray-500">
-                                {contact.status ||
-                                    "Hey there! I’m using BeeApp."}
+                                {contact.status || "Hey there! I’m using BeeApp."}
                             </p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Footer (Next button) */}
+            {/* Footer */}
             {selected.length > 0 && (
-                <div
-                    className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex justify-end items-center">
+                <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex justify-end items-center">
                     <button
                         onClick={handleNext}
                         className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
                     >
-                        <ArrowRight/>
+                        <ArrowRight />
                     </button>
                 </div>
             )}
-
         </div>
     );
 }
