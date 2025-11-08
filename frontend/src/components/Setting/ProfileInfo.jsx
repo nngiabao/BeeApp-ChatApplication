@@ -19,21 +19,22 @@ export default function ProfileInfo() {
         localStorage.clear();
         window.location.href = "/";
     };
-
-
+    //update name
     const handleSaveName = async () => {
         setIsEditingName(false);
         await updateUser({ name });  //
     };
-
-    const handlePhoneSave = async (newPhone) => {
-        await updateUser({ phoneNumber: newPhone });
+    //update phone
+    const handlePhoneSave = async () => {
+        setIsEditingName(false);
+        await updateUser({ phone });
     };
-
+    //update about
     const handleAboutSave = async (newPhone) => {
+        setIsEditingName(false);
         await updateUser({ phoneNumber: newPhone });
     };
-
+    //update pw
     const handlePasswordSave = async (oldPassword, newPassword) => {
         await changePassword(oldPassword, newPassword);
     };
