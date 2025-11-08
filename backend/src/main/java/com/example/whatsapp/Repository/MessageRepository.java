@@ -10,10 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
+    //Get all messages of a chat, oldest first (for ChatWindow)
+    List<Message> findByChatIdOrderBySentAtAsc(Long chatId);
 
-    @Query("SELECT m FROM Message m WHERE m.chatId = :chatId ORDER BY m.sentAt ASC")
-    List<Message> findMessagesByChatId(@Param("chatId") Long chatId);
-
-    @Query("SELECT m FROM Message m WHERE m.chatId = :chatId ORDER BY m.sentAt DESC LIMIT 1")
-    Optional<Message> findLastMessage(Long chatId);
+    //Get the most recent message (for Chat preview)
+    Optional<Message> findTopByChatIdOrderBySentAtDesc(Long chatId);
 }
