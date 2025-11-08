@@ -6,7 +6,7 @@ import {
     unsubscribeFromChat,
     sendMessage as socketSendMessage,
 } from "../../utils/socket";
-import {useUser} from "./UserContext";
+import { useUser } from "./UserContext";
 
 const ChatContext = createContext();
 
@@ -15,9 +15,12 @@ export function ChatProvider({ children }) {
     const [currentChat, setCurrentChat] = useState(null);
     const [members, setMembers] = useState([]);
     const [messages, setMessages] = useState([]);
+    const [activeFilter, setActiveFilter] = useState("All"); // ✅ new filter state
     const { user } = useUser();
+
     // 🧩 Load all chats (sidebar)
     const loadChatList = async () => {
+        if (!user?.id) return;
         try {
             const res = await fetch(`http://localhost:8080/chats/${user.id}`);
             const data = await res.json();
@@ -51,13 +54,13 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // ✅ Connect WebSocket once
+    // ✅ Connect WebSocket once on mount
     useEffect(() => {
         connectWebSocket(() => {
-            console.log("🟢 WebSocket connected in ChatContext");
+            console.log("✅ WebSocket connected in ChatContext");
         });
         loadChatList();
-    }, []);
+    }, [user?.id]);
 
     // ✅ Subscribe when a chat is opened
     useEffect(() => {
@@ -73,7 +76,7 @@ export function ChatProvider({ children }) {
         }
     }, [currentChat]);
 
-    // 🧩 Send message (via socket.js)
+    // 🧩 Send message via socket.js
     const sendMessage = (msg) => {
         if (!currentChat) {
             console.warn("⚠️ No active chat selected.");
@@ -91,6 +94,8 @@ export function ChatProvider({ children }) {
 
         // Optimistic UI update
         setMessages((prev) => [...prev, { ...messagePayload, status: "sending" }]);
+
+        // Send through WebSocket
         socketSendMessage(
             currentChat.id,
             msg.senderId,
@@ -100,11 +105,21 @@ export function ChatProvider({ children }) {
         );
     };
 
-    // 🧹 Clear current chat
+    // 🧹 Clear current chat data
     const clearChat = () => {
         setMembers([]);
         setMessages([]);
         setCurrentChat(null);
+    };
+
+    // ✅ Filter chats client-side based on activeFilter
+    const getFilteredChats = () => {
+        if (!Array.isArray(chatList)) return [];
+        return chatList.filter((chat) => {
+            if (activeFilter === "Groups") return chat.type === "GROUP";
+            if (activeFilter === "Unread") return chat.lastMessageStatus === "SENT";
+            return true; // "All" → show all chats
+        });
     };
 
     const value = {
@@ -112,15 +127,19 @@ export function ChatProvider({ children }) {
         currentChat,
         members,
         messages,
+        activeFilter, // ✅ expose
+        setActiveFilter,
         loadChatList,
         loadChatDetails,
         clearChat,
         sendMessage,
+        getFilteredChats, // ✅ helper for filtered chat list
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
+// Hook for components
 export function useChat() {
     const context = useContext(ChatContext);
     if (!context) throw new Error("useChat must be used within a ChatProvider");
