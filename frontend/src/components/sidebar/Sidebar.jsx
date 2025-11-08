@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import SidebarNav from "./SidebarNav";
 import ChatList from "./ChatList";
 import ContactList from "../contact/ContactList";
@@ -10,20 +10,23 @@ export default function Sidebar() {
     const renderContent = () => {
         switch (activeTab) {
             case "chats":
-                return <ChatList/>;
+                return <ChatList />;
             case "contacts":
-                return <ContactList/>;
+                return <ContactList />;
             case "settings":
-                return <Settings />
+                return <Settings />;
             default:
-                return <ChatList/>;
+                return <ChatList />;
         }
     };
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen bg-white">
+            {/* Navigation Bar (icons) */}
             <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab}/>
-            <div className="flex flex-col w-80 bg-white border-r border-gray-300">
+
+            {/* Content Panel */}
+            <div className="flex flex-col w-[460px] border-r border-gray-300">
                 {renderContent()}
             </div>
         </div>
