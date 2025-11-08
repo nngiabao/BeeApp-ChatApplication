@@ -7,10 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 
 /**
  * Represents a single row in the 'post' database table.
@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 @Data // Generates getters, setters, toString, equals, and hashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Assumes auto-incrementing PK
@@ -31,7 +32,7 @@ public class Chat {
     private String type;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "title", length = 100, nullable = false)
     private String title;
