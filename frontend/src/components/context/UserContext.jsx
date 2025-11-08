@@ -44,30 +44,23 @@ export function UserProvider({ children }) {
         }
     };
 
-    //Change password separately
     const changePassword = async (oldPassword, newPassword) => {
         if (!user || !user.id) return;
 
         try {
-            const payload = {
-                ...user,
-                password: newPassword,
-            };
-
-            const res = await fetch(`http://localhost:8080/users/${user.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
+            const res = await fetch(
+                `http://localhost:8080/users/${user.id}/password?oldpass=${oldPassword}&newpass=${newPassword}`,
+                { method: "PUT" }
+            );
 
             const data = await res.json();
             if (res.ok) {
-                alert("Password updated successfully!");
+                alert(data.message || "Password updated successfully!");
             } else {
-                alert(data.message || "Password update failed");
+                alert(data.message || "Failed to change password");
             }
         } catch (err) {
-            console.error("❌ Error updating password:", err);
+            console.error("❌ Error changing password:", err);
             alert("Server error while changing password");
         }
     };

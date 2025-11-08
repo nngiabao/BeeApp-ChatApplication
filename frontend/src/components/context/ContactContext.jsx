@@ -35,6 +35,7 @@ export function ContactListProvider({ children }) {
                 setContacts(list);
                 setError(null);
                 setHasFetched(true);
+                console.log(res.data);
                 localStorage.setItem("contacts", JSON.stringify(list));
             } catch (err) {
                 console.error("Error fetching contacts:", err);
@@ -44,7 +45,7 @@ export function ContactListProvider({ children }) {
             }
         };
 
-        // ✅ show cached contacts instantly, then refresh once
+        //show cached contacts instantly, then refresh once
         const cached = localStorage.getItem("contacts");
         if (cached && !hasFetched) {
             setContacts(JSON.parse(cached));

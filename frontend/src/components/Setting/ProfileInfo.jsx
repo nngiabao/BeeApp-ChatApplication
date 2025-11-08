@@ -11,6 +11,7 @@ export default function ProfileInfo() {
 
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
+    const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [name, setName] = useState();
     const [phone, setPhone] = useState();
     const [about, setAbout] = useState();
@@ -26,17 +27,32 @@ export default function ProfileInfo() {
     };
     //update phone
     const handlePhoneSave = async () => {
-        setIsEditingName(false);
-        await updateUser({ phone });
+        setIsEditingPhone(false);
+        await updateUser({ phoneNumber: phone });
     };
     //update about
-    const handleAboutSave = async (newPhone) => {
-        setIsEditingName(false);
-        await updateUser({ phoneNumber: newPhone });
+    const handleAboutSave = async () => {
+        setIsEditingAbout(false);
+        await updateUser({ statusMessage: about });
     };
     //update pw
-    const handlePasswordSave = async (oldPassword, newPassword) => {
+    const handlePasswordSave = async (e) => {
+        e.preventDefault(); // stop page reload
+
+        if (newPassword !== confirmPassword) {
+            alert("New passwords do not match");
+            return;
+        }
+
         await changePassword(oldPassword, newPassword);
+
+        //Close popup after success
+        setShowPasswordForm(false);
+
+        //Clear input fields
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
     };
 
     return (
@@ -89,7 +105,7 @@ export default function ProfileInfo() {
             <div className="mb-6">
                 <label className="block text-sm text-gray-500 mb-1">Phone</label>
                 <div className="flex items-center justify-between">
-                    {isEditingAbout ? (
+                    {isEditingPhone ? (
                         <input
                             type="text"
                             value={phone}
@@ -106,7 +122,7 @@ export default function ProfileInfo() {
                     )}
                     <Pencil
                         className="w-4 h-4 text-gray-500 cursor-pointer hover:text-green-600"
-                        onClick={() => setIsEditingAbout(true)}
+                        onClick={() => setIsEditingPhone(true)}
                     />
                 </div>
             </div>
