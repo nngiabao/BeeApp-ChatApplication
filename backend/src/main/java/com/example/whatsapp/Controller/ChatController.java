@@ -1,7 +1,11 @@
 package com.example.whatsapp.Controller;
 
 import com.example.whatsapp.DTO.ChatDTO;
+import com.example.whatsapp.DTO.CreateGroupRequestDTO;
+import com.example.whatsapp.DTO.GroupMemberDTO;
 import com.example.whatsapp.DTO.MessageDTO;
+import com.example.whatsapp.Entity.Chat;
+import com.example.whatsapp.Entity.GroupMember;
 import com.example.whatsapp.Entity.Message;
 import com.example.whatsapp.Service.ChatService;
 import com.example.whatsapp.Service.MessageService;
@@ -31,7 +35,7 @@ public class ChatController {
         System.out.println("💬 Received message from user " + messageDTO.getSenderId() +
                 " in chat " + messageDTO.getChatId() + ": " + messageDTO.getContent());
 
-        // 1️⃣ Save to DB
+        //Save to DB
         Message message = Message.builder()
                 .chatId(messageDTO.getChatId())
                 .senderId(messageDTO.getSenderId())
@@ -45,7 +49,7 @@ public class ChatController {
 
         Message savedMessage = messageService.sendMessage(message);
 
-        // 2️⃣ Convert back to DTO for broadcasting
+        //Convert back to DTO for broadcasting
         MessageDTO broadcast = MessageDTO.builder()
                 .id(savedMessage.getId())
                 .chatId(savedMessage.getChatId())
@@ -57,16 +61,22 @@ public class ChatController {
                 .sentAt(savedMessage.getSentAt())
                 .build();
 
-        // 3️⃣ Send to all subscribers of this chat room
+        //Send to all subscribers of this chat room
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + savedMessage.getChatId(),
                 broadcast
         );
     }
 
-    @GetMapping
-    public ResponseEntity<List<ChatDTO>> getAllChats(@RequestParam Long userId) {
-        List<ChatDTO> chatList = chatService.getAllChatsForUser(userId);
-        return ResponseEntity.ok(chatList);
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<ChatDTO>> getAllChats(@PathVariable Long userId) {
+        List<ChatDTO> chats = chatService.getAllChatsForUser(userId);
+        return ResponseEntity.ok(chats);
     }
+    //create new group
+    @PostMapping("/group")
+    public ResponseEntity<ChatDTO> createGroup(@RequestBody CreateGroupRequestDTO request) {
+        return ResponseEntity.ok(chatService.createGroupChat(request));
+    }
+
 }

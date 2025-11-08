@@ -57,7 +57,7 @@ public class ChatService {
                 .map(userId -> GroupMember.builder()
                         .chatId(savedChat.getId())
                         .userId(userId)
-                        .role(userId.equals(req.getCreatedBy()) ? "admin" : "member")
+                        .role(userId.equals(req.getCreatedBy()) ? "ADMIN" : "MEMBER")
                         .build())
                 .toList();
 
