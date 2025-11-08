@@ -15,7 +15,6 @@ public class UserDTO {
     @NotBlank
     private String phoneNumber;
 
-    @NotBlank
     private String password;
 
     private String name;

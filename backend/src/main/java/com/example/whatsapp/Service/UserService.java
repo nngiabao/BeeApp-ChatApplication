@@ -32,7 +32,9 @@ public class UserService {
         return userRepository.findById(id).map(user -> {
             user.setUsername(userDTO.getUsername());
             user.setPhoneNumber(userDTO.getPhoneNumber());
-            user.setPassword(userDTO.getPassword());
+            if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
+                user.setPassword(userDTO.getPassword());
+            }
             user.setName(userDTO.getName());
             user.setStatusMessage(userDTO.getStatusMessage());
             user.setProfilePicture(userDTO.getProfilePicture());
@@ -41,9 +43,6 @@ public class UserService {
             return userRepository.save(user);
         });
     }
-
-
-
     //delete
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
@@ -56,7 +55,6 @@ public class UserService {
     public Optional<User> getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber);
     }
-
     //find by id
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
@@ -66,7 +64,6 @@ public class UserService {
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findUserByUsername(username);
     }
-
     //set status or offline
     public void setUserOnline(String username,boolean status) {
         userRepository.findUserByUsername(username).ifPresent(user -> {

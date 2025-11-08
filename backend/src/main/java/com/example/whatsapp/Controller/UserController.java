@@ -75,7 +75,8 @@ public class UserController {
                 .orElse(ResponseEntity.status(404).body(new ApiResponse<>("User not found", null)));
     }
 
-    //check valid phone or username
+    //change password
+
 
     //find by phone number
     @GetMapping("/{phone}")
