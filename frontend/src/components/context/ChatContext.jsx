@@ -11,12 +11,13 @@ import { useUser } from "./UserContext";
 const ChatContext = createContext();
 
 export function ChatProvider({ children }) {
+    const { user } = useUser();
+
     const [chatList, setChatList] = useState([]);
     const [currentChat, setCurrentChat] = useState(null);
-    const [members, setMembers] = useState([]);
-    const [messages, setMessages] = useState([]);
-    const [activeFilter, setActiveFilter] = useState("All"); // ✅ new filter state
-    const { user } = useUser();
+    const [messagesByChat, setMessagesByChat] = useState({});
+    const [membersByChat, setMembersByChat] = useState({}); // ✅ store group members
+    const [activeFilter, setActiveFilter] = useState("All");
 
     // 🧩 Load all chats (sidebar)
     const loadChatList = async () => {
@@ -30,58 +31,54 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // 🧩 Load selected chat details (header + messages)
-    const loadChatDetails = async (chatId) => {
-        clearChat();
+    // ✅ Load group members (only for GROUP chats)
+    const loadGroupMembers = async (chatId) => {
         try {
-            const [chatRes, memberRes, msgRes] = await Promise.all([
-                fetch(`http://localhost:8080/chats/${chatId}`),
-                fetch(`http://localhost:8080/groups/${chatId}`),
-                fetch(`http://localhost:8080/messages/chat/${chatId}`),
-            ]);
+            const res = await fetch(`http://localhost:8080/groups/${chatId}`);
+            const data = await res.json();
 
-            const [chatData, memberData, msgData] = await Promise.all([
-                chatRes.json(),
-                memberRes.json(),
-                msgRes.json(),
-            ]);
-
-            setCurrentChat(chatData);
-            setMembers(Array.isArray(memberData) ? memberData : []);
-            setMessages(Array.isArray(msgData) ? msgData : []);
+            if (Array.isArray(data)) {
+                setMembersByChat((prev) => ({
+                    ...prev,
+                    [chatId]: data,
+                }));
+            }
         } catch (err) {
-            console.error("❌ Failed to load chat details:", err);
+            console.error("❌ Failed to load group members:", err);
         }
     };
 
-    // ✅ Connect WebSocket once on mount
-    useEffect(() => {
-        connectWebSocket(() => {
-            console.log("✅ WebSocket connected in ChatContext");
-        });
-        loadChatList();
-    }, [user?.id]);
+    // ✅ Select a chat (cached if already loaded)
+    const selectChat = async (chat) => {
+        if (!chat) return;
+        setCurrentChat(chat);
 
-    // ✅ Subscribe when a chat is opened
-    useEffect(() => {
-        if (currentChat?.id) {
-            console.log(`📡 Subscribing to chat ${currentChat.id}`);
-            subscribeToChat(currentChat.id, (msg) => {
-                console.log("📩 Message received:", msg);
-                setMessages((prev) => [...prev, msg]);
-            });
+        // Load messages if not cached
+        if (!messagesByChat[chat.id]?.length) {
+            try {
+                const res = await fetch(`http://localhost:8080/messages/chat/${chat.id}`);
+                const data = await res.json();
 
-            // cleanup when switching or leaving chat
-            return () => unsubscribeFromChat(currentChat.id);
+                if (Array.isArray(data.data)) {
+                    setMessagesByChat((prev) => ({
+                        ...prev,
+                        [chat.id]: data.data,
+                    }));
+                }
+            } catch (err) {
+                console.error("❌ Failed to load messages:", err);
+            }
         }
-    }, [currentChat]);
 
-    // 🧩 Send message via socket.js
+        // Load members if group and not cached
+        if (chat.type === "GROUP" && !membersByChat[chat.id]) {
+            await loadGroupMembers(chat.id);
+        }
+    };
+
+    // ✅ Send message
     const sendMessage = (msg) => {
-        if (!currentChat) {
-            console.warn("⚠️ No active chat selected.");
-            return;
-        }
+        if (!currentChat) return;
 
         const messagePayload = {
             chatId: currentChat.id,
@@ -93,9 +90,15 @@ export function ChatProvider({ children }) {
         };
 
         // Optimistic UI update
-        setMessages((prev) => [...prev, { ...messagePayload, status: "sending" }]);
+        setMessagesByChat((prev) => ({
+            ...prev,
+            [currentChat.id]: [
+                ...(prev[currentChat.id] || []),
+                { ...messagePayload, status: "sending" },
+            ],
+        }));
 
-        // Send through WebSocket
+        // WebSocket send
         socketSendMessage(
             currentChat.id,
             msg.senderId,
@@ -105,41 +108,55 @@ export function ChatProvider({ children }) {
         );
     };
 
-    // 🧹 Clear current chat data
-    const clearChat = () => {
-        setMembers([]);
-        setMessages([]);
-        setCurrentChat(null);
-    };
+    // ✅ Connect WebSocket once
+    useEffect(() => {
+        connectWebSocket(() => {
+            console.log("✅ WebSocket connected");
+        });
+        loadChatList();
+    }, [user?.id]);
 
-    // ✅ Filter chats client-side based on activeFilter
+    // ✅ Subscribe to active chat’s WebSocket
+    useEffect(() => {
+        if (!currentChat?.id) return;
+
+        subscribeToChat(currentChat.id, (msg) => {
+            console.log("📩 New message:", msg);
+            setMessagesByChat((prev) => ({
+                ...prev,
+                [currentChat.id]: [...(prev[currentChat.id] || []), msg],
+            }));
+        });
+
+        return () => unsubscribeFromChat(currentChat.id);
+    }, [currentChat]);
+
+    // ✅ Chat filters
     const getFilteredChats = () => {
         if (!Array.isArray(chatList)) return [];
         return chatList.filter((chat) => {
             if (activeFilter === "Groups") return chat.type === "GROUP";
             if (activeFilter === "Unread") return chat.lastMessageStatus === "SENT";
-            return true; // "All" → show all chats
+            return true;
         });
     };
 
     const value = {
         chatList,
         currentChat,
-        members,
-        messages,
-        activeFilter, // ✅ expose
+        messagesByChat,
+        membersByChat, // ✅ expose members for group chat
+        activeFilter,
         setActiveFilter,
-        loadChatList,
-        loadChatDetails,
-        clearChat,
+        selectChat,
         sendMessage,
-        getFilteredChats, // ✅ helper for filtered chat list
+        loadChatList,
+        getFilteredChats,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
-// Hook for components
 export function useChat() {
     const context = useContext(ChatContext);
     if (!context) throw new Error("useChat must be used within a ChatProvider");

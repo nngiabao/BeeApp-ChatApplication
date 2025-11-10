@@ -55,16 +55,16 @@ export default function AddGroupPanel({ onBack }) {
             if (!res.ok) throw new Error("Failed to create group");
             const data = await res.json();
 
-            console.log("✅ Group created:", data);
+            console.log("Group created:", data);
             alert("Group created successfully!");
             onBack(); // go back or refresh list
         } catch (err) {
-            console.error("❌ Error creating group:", err);
+            console.error("Error creating group:", err);
             alert("Error creating group.");
         }
     };
 
-    // ✅ Step 2: show confirmation screen
+    //Step 2: show confirmation screen
     if (step === 2) {
         return (
             <NewGroupPanel
@@ -75,7 +75,7 @@ export default function AddGroupPanel({ onBack }) {
         );
     }
 
-    // ✅ Step 1: select contacts
+    //Step 1: select contacts
     return (
         <div className="w-full h-full bg-white p-4 overflow-y-auto flex flex-col">
             {/* Header */}
