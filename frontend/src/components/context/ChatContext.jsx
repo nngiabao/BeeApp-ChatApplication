@@ -16,10 +16,10 @@ export function ChatProvider({ children }) {
     const [chatList, setChatList] = useState([]);
     const [currentChat, setCurrentChat] = useState(null);
     const [messagesByChat, setMessagesByChat] = useState({});
-    const [membersByChat, setMembersByChat] = useState({}); // ✅ store group members
+    const [membersByChat, setMembersByChat] = useState({});
     const [activeFilter, setActiveFilter] = useState("All");
 
-    // 🧩 Load all chats (sidebar)
+    // 🧩 Load all chats for sidebar
     const loadChatList = async () => {
         if (!user?.id) return;
         try {
@@ -31,10 +31,10 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // ✅ Load group members (only for GROUP chats)
+    // 🧩 Load group members by chatId
     const loadGroupMembers = async (chatId) => {
         try {
-            const res = await fetch(`http://localhost:8080/groups/${chatId}`);
+            const res = await fetch(`http://localhost:8080/groups/chat/${chatId}`);
             const data = await res.json();
 
             if (Array.isArray(data)) {
@@ -48,21 +48,23 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // ✅ Select a chat (cached if already loaded)
+    // ✅ Select a chat (and load messages + members if not cached)
     const selectChat = async (chat) => {
         if (!chat) return;
         setCurrentChat(chat);
 
-        // Load messages if not cached
-        if (!messagesByChat[chat.id]?.length) {
-            try {
-                const res = await fetch(`http://localhost:8080/messages/chat/${chat.id}`);
-                const data = await res.json();
+        const chatId = chat.id;
+        const messagesLoaded = messagesByChat[chatId]?.length;
+        const membersLoaded = membersByChat[chatId]?.length;
 
+        if (!messagesLoaded) {
+            try {
+                const res = await fetch(`http://localhost:8080/messages/chat/${chatId}`);
+                const data = await res.json();
                 if (Array.isArray(data.data)) {
                     setMessagesByChat((prev) => ({
                         ...prev,
-                        [chat.id]: data.data,
+                        [chatId]: data.data,
                     }));
                 }
             } catch (err) {
@@ -70,68 +72,133 @@ export function ChatProvider({ children }) {
             }
         }
 
-        // Load members if group and not cached
-        if (chat.type === "GROUP" && !membersByChat[chat.id]) {
-            await loadGroupMembers(chat.id);
+        // Load group members (only if group chat)
+        if (chat.type === "GROUP" && !membersLoaded) {
+            await loadGroupMembers(chatId);
         }
     };
 
-    // ✅ Send message
-    const sendMessage = (msg) => {
-        if (!currentChat) return;
+    // ✅ Send message (via WebSocket → backend → DB)
+    const sendMessage = async (msg) => {
+        if (!currentChat || !user?.id) {
+            console.warn("⚠️ No active chat or user.");
+            return;
+        }
 
-        const messagePayload = {
-            chatId: currentChat.id,
-            senderId: msg.senderId,
+        const chatId = currentChat.id;
+
+        // 1️⃣ Optimistic UI update
+        const optimisticMsg = {
+            chatId,
+            senderId: user.id,
             content: msg.content,
             messageType: msg.messageType || "text",
             mediaUrl: msg.mediaUrl || null,
-            createdAt: new Date().toISOString(),
+            status: "sending",
+            sentAt: new Date().toISOString(),
         };
 
-        // Optimistic UI update
+        // Add to messagesByChat
         setMessagesByChat((prev) => ({
             ...prev,
-            [currentChat.id]: [
-                ...(prev[currentChat.id] || []),
-                { ...messagePayload, status: "sending" },
-            ],
+            [chatId]: [...(prev[chatId] || []), optimisticMsg],
         }));
 
-        // WebSocket send
-        socketSendMessage(
-            currentChat.id,
-            msg.senderId,
-            msg.content,
-            msg.messageType,
-            msg.mediaUrl
-        );
+        // 2️⃣ Move this chat to top of sidebar (optimistic)
+        setChatList((prev) => {
+            const updated = prev.map((chat) =>
+                chat.id === chatId
+                    ? { ...chat, lastMessage: msg.content, lastMessageTime: optimisticMsg.sentAt }
+                    : chat
+            );
+            // Sort newest first
+            return updated.sort(
+                (a, b) =>
+                    new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
+            );
+        });
+
+        try {
+            // 3️⃣ Send via WebSocket → backend saves → broadcasts
+            socketSendMessage(
+                chatId,
+                user.id,
+                msg.content,
+                msg.messageType,
+                msg.mediaUrl
+            );
+            console.log("📤 Message sent via WebSocket:", msg.content);
+        } catch (err) {
+            console.error("❌ Failed to send message:", err);
+            setMessagesByChat((prev) => ({
+                ...prev,
+                [chatId]: (prev[chatId] || []).map((m) =>
+                    m.sentAt === optimisticMsg.sentAt
+                        ? { ...m, status: "failed" }
+                        : m
+                ),
+            }));
+        }
     };
 
-    // ✅ Connect WebSocket once
+    // ✅ Connect WebSocket once when app starts
     useEffect(() => {
         connectWebSocket(() => {
             console.log("✅ WebSocket connected");
         });
         loadChatList();
     }, [user?.id]);
-
-    // ✅ Subscribe to active chat’s WebSocket
+    //when chat update
+    // ✅ Subscribe to current chat’s messages
     useEffect(() => {
         if (!currentChat?.id) return;
 
-        subscribeToChat(currentChat.id, (msg) => {
-            console.log("📩 New message:", msg);
-            setMessagesByChat((prev) => ({
-                ...prev,
-                [currentChat.id]: [...(prev[currentChat.id] || []), msg],
-            }));
+        subscribeToChat(currentChat.id, (savedMsg) => {
+            console.log("📩 Received saved message:", savedMsg);
+
+            setMessagesByChat((prev) => {
+                const existingMessages = prev[currentChat.id] || [];
+
+                // 🔍 Avoid duplicates — compare sender + content + sentAt
+                const isDuplicate = existingMessages.some(
+                    (m) =>
+                        m.senderId === savedMsg.senderId &&
+                        m.content === savedMsg.content &&
+                        Math.abs(new Date(m.sentAt) - new Date(savedMsg.sentAt)) < 1000
+                );
+                if (isDuplicate) {
+                    console.warn("⏩ Skipping duplicate message:", savedMsg.content);
+                    return prev;
+                }
+
+                return {
+                    ...prev,
+                    [currentChat.id]: [...existingMessages, savedMsg],
+                };
+            });
+
+            // 🧠 Update chat preview + sort
+            setChatList((prev) => {
+                const updated = prev.map((chat) =>
+                    chat.id === savedMsg.chatId
+                        ? {
+                            ...chat,
+                            lastMessage: savedMsg.content,
+                            lastMessageTime: savedMsg.sentAt,
+                        }
+                        : chat
+                );
+                return updated.sort(
+                    (a, b) =>
+                        new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
+                );
+            });
         });
 
         return () => unsubscribeFromChat(currentChat.id);
     }, [currentChat]);
 
-    // ✅ Chat filters
+    // ✅ Filter sidebar chats
     const getFilteredChats = () => {
         if (!Array.isArray(chatList)) return [];
         return chatList.filter((chat) => {
@@ -145,7 +212,7 @@ export function ChatProvider({ children }) {
         chatList,
         currentChat,
         messagesByChat,
-        membersByChat, // ✅ expose members for group chat
+        membersByChat, // ✅ Added
         activeFilter,
         setActiveFilter,
         selectChat,
