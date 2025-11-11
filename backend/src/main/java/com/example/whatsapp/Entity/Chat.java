@@ -39,4 +39,7 @@ public class Chat {
 
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
+
+    @Column(name = "image_url")
+    private String chatImageUrl;
 }

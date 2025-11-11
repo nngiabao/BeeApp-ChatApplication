@@ -15,4 +15,5 @@ public class ChatDTO {
     private LocalDateTime createdAt;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
+    private String imgUrl;
 }
