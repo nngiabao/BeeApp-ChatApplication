@@ -22,7 +22,7 @@ public class MessageService {
     public Message sendMessage(Message message) {
         message.setSentAt(LocalDateTime.now());
         if (message.getStatus() == null) {
-            message.setStatus("sent");
+            message.setStatus("SENT");
         }
         return messageRepository.save(message);
     }
@@ -31,7 +31,7 @@ public class MessageService {
      * ✅ Get all messages for a specific chat, sorted by time.
      */
     public List<MessageDTO> getMessagesByChatId(Long chatId) {
-        return messageRepository.findMessagesByChatId(chatId)
+        return messageRepository.findByChatIdOrderBySentAtAsc(chatId)
                 .stream()
                 .map(msg -> MessageDTO.builder()
                         .id(msg.getId())
@@ -60,7 +60,7 @@ public class MessageService {
      * ✅ Get the latest message in a chat (useful for chat list preview).
      */
     public MessageDTO getLastMessageByChatId(Long chatId) {
-        return messageRepository.findLastMessage(chatId)
+        return messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
                 .map(msg -> MessageDTO.builder()
                         .id(msg.getId())
                         .chatId(msg.getChatId())
