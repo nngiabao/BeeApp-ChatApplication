@@ -2,6 +2,7 @@ package com.example.whatsapp.Service;
 
 import com.example.whatsapp.DTO.UserDTO;
 import com.example.whatsapp.Entity.User;
+import com.example.whatsapp.Payload.ApiResponse;
 import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,26 @@ public class UserService {
         }
         return false;
     }
+    //change password
+    public ApiResponse<String> changePassword(Long id, String oldpass, String newpass) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getPassword().equals(oldpass)) {
+            return new ApiResponse<>("Old password is incorrect", null);
+        }
+
+        if (newpass == null || newpass.isBlank()) {
+            return new ApiResponse<>("New password cannot be empty", null);
+        }
+
+        user.setPassword(newpass);
+        userRepository.save(user);
+
+        return new ApiResponse<>("Password updated successfully", null);
+    }
+
+
     //find by phone
     public Optional<User> getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber);

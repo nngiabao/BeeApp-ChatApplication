@@ -38,7 +38,7 @@ public class ContactController {
     public ResponseEntity<?> addContactByLookup(@RequestBody Map<String, String> request) {
         Long userId = Long.parseLong(request.get("userId"));
         String lookupValue = request.get("lookupValue");
-        String alias = request.get("name");
+        String alias = request.get("alias");
         try {
             //
             Contact contact = contactService.createContact(userId, lookupValue, alias);
