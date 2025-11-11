@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useChat } from "../context/ChatContext";
 
+
 export default function ChatListItem() {
     const {
         chatList,
@@ -49,10 +50,15 @@ export default function ChatListItem() {
                     >
                         {/* Avatar */}
                         <img
-                            src={`https://i.pravatar.cc/50?u=${chat.title}`}
+                            src={
+                                chat.type === "GROUP"
+                                    ? chat.chatImageUrl || "../../assets/mainpage.png"
+                                    : `https://chatapp-beeapp.s3.us-east-2.amazonaws.com/group/test1.jpg`
+                            }
                             alt={chat.title}
                             className="w-10 h-10 rounded-full mr-3"
                         />
+
 
                         {/* Chat Info */}
                         <div className="flex-1">
