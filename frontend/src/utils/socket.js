@@ -91,7 +91,7 @@ export const sendMessage = (chatId, senderId, content, messageType = "text", med
     };
 
     console.log("📤 Sending message:", msg);
-    stompClient.send("/app/sendMessage", {}, JSON.stringify(msg));
+    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
 };
 
 // 🧹 Disconnect WebSocket (optional)

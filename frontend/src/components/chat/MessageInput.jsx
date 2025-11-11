@@ -1,17 +1,29 @@
+// src/components/chat/MessageInput.jsx
 import React, { useState, useRef } from "react";
 import { Smile, Paperclip, Send } from "lucide-react";
 import EmojiPanel from "./EmojiPanel";
+import { useChat } from "../context/ChatContext";
+import { useUser } from "../context/UserContext";
 
-export default function MessageInput({ onSend }) {
+export default function MessageInput() {
     const [input, setInput] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
     const emojiButtonRef = useRef(null);
 
+    const { sendMessage, currentChat } = useChat();
+    const { user } = useUser();
+
     const handleSend = (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || !currentChat) return;
 
-        if (onSend) onSend(input.trim());
+        // Send message using ChatContext
+        sendMessage({
+            senderId: user.id,
+            content: input.trim(),
+            messageType: "text",
+        });
+
         setInput("");
         setShowEmoji(false);
     };
@@ -22,9 +34,9 @@ export default function MessageInput({ onSend }) {
 
     return (
         <div className="relative">
-            {/* Emoji popup moved slightly to the right of emoji icon */}
+            {/* Emoji popup */}
             {showEmoji && (
-                <div className="absolute bottom-[20px] left-[200px] z-50">
+                <div className="absolute bottom-[70px] left-[60px] z-50">
                     <EmojiPanel
                         onEmojiClick={handleEmojiClick}
                         onClose={() => setShowEmoji(false)}
