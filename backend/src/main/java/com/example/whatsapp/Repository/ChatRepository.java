@@ -10,10 +10,24 @@ import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
-    // Find all chats created by a specific user
+
+    //Chats created by this user (your original query)
     @Query("SELECT c FROM Chat c WHERE c.createdBy = :userId")
     List<Chat> findAllByCreatedBy(@Param("userId") Long userId);
 
+    //NEW: All chats where this user is a member (even if not the creator)
+    @Query("""
+           SELECT DISTINCT c 
+           FROM Chat c 
+           JOIN GroupMember gm ON c.id = gm.chatId 
+           WHERE gm.userId = :userId
+           """)
+    List<Chat> findAllByUserId(@Param("userId") Long userId);
+    //this one for slidebar
+    @Query("""
+        SELECT DISTINCT c FROM Chat c
+        LEFT JOIN GroupMember gm ON gm.chatId = c.id
+        WHERE c.createdBy = :userId OR gm.userId = :userId
+        """)
+    List<Chat> findAllChatsInvolvingUser(@Param("userId") Long userId);
 }
-
-

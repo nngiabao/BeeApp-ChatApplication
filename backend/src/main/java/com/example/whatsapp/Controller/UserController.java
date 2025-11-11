@@ -76,6 +76,20 @@ public class UserController {
     }
 
     //change password
+    @PutMapping("/{id}/password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @PathVariable Long id,
+            @RequestParam("oldpass") String oldpass,
+            @RequestParam("newpass") String newpass) {
+
+        ApiResponse<String> response = userService.changePassword(id, oldpass, newpass);
+
+        if ("Old password is incorrect".equals(response.getMessage())) {
+            return ResponseEntity.status(404).body(response);
+        }
+
+        return ResponseEntity.ok(response);
+    }
 
 
     //find by phone number
