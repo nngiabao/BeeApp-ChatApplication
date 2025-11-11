@@ -27,11 +27,12 @@ export default function AddContactPanel({ onBack }) {
             console.log("Response:", res.data);
 
             //If backend sends new contact in response, add it to global context
-            if (res.data && res.data.data) {
-                addContact(res.data.data); // assumes your backend wraps it in { message, data: { ... } }
+            addContact(res.data.data);
+          /*  if (res.data && res.data.data) {
+                // assumes your backend wraps it in { message, data: { ... } }
             } else if (res.data && res.data.id) {
                 addContact(res.data); // if backend returns raw contact
-            }
+            }*/
 
             setMessage("Contact added successfully!");
             setContact({ name: "", lookUp: "" });
@@ -58,11 +59,10 @@ export default function AddContactPanel({ onBack }) {
                 <input
                     type="text"
                     name="name"
-                    placeholder="Contact Name"
+                    placeholder="Contact Alias ( Optional) "
                     value={contact.name}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    required
                 />
 
                 <input

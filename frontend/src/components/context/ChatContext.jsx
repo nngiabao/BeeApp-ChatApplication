@@ -31,12 +31,11 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // 🧩 Load group members by chatId
+    // 🧩 Load group members
     const loadGroupMembers = async (chatId) => {
         try {
             const res = await fetch(`http://localhost:8080/groups/chat/${chatId}`);
             const data = await res.json();
-
             if (Array.isArray(data)) {
                 setMembersByChat((prev) => ({
                     ...prev,
@@ -48,7 +47,7 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // ✅ Select a chat (and load messages + members if not cached)
+    // ✅ Select a chat (and load messages if not cached)
     const selectChat = async (chat) => {
         if (!chat) return;
         setCurrentChat(chat);
@@ -57,6 +56,7 @@ export function ChatProvider({ children }) {
         const messagesLoaded = messagesByChat[chatId]?.length;
         const membersLoaded = membersByChat[chatId]?.length;
 
+        // Load messages if not cached
         if (!messagesLoaded) {
             try {
                 const res = await fetch(`http://localhost:8080/messages/chat/${chatId}`);
@@ -72,7 +72,7 @@ export function ChatProvider({ children }) {
             }
         }
 
-        // Load group members (only if group chat)
+        // Load members if group chat
         if (chat.type === "GROUP" && !membersLoaded) {
             await loadGroupMembers(chatId);
         }
@@ -86,8 +86,6 @@ export function ChatProvider({ children }) {
         }
 
         const chatId = currentChat.id;
-
-        // 1️⃣ Optimistic UI update
         const optimisticMsg = {
             chatId,
             senderId: user.id,
@@ -98,20 +96,23 @@ export function ChatProvider({ children }) {
             sentAt: new Date().toISOString(),
         };
 
-        // Add to messagesByChat
+        // Optimistic UI update
         setMessagesByChat((prev) => ({
             ...prev,
             [chatId]: [...(prev[chatId] || []), optimisticMsg],
         }));
 
-        // 2️⃣ Move this chat to top of sidebar (optimistic)
+        // Move chat to top
         setChatList((prev) => {
             const updated = prev.map((chat) =>
                 chat.id === chatId
-                    ? { ...chat, lastMessage: msg.content, lastMessageTime: optimisticMsg.sentAt }
+                    ? {
+                        ...chat,
+                        lastMessage: msg.content,
+                        lastMessageTime: optimisticMsg.sentAt,
+                    }
                     : chat
             );
-            // Sort newest first
             return updated.sort(
                 (a, b) =>
                     new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
@@ -119,7 +120,7 @@ export function ChatProvider({ children }) {
         });
 
         try {
-            // 3️⃣ Send via WebSocket → backend saves → broadcasts
+            // WebSocket send — backend saves + broadcasts
             socketSendMessage(
                 chatId,
                 user.id,
@@ -127,78 +128,90 @@ export function ChatProvider({ children }) {
                 msg.messageType,
                 msg.mediaUrl
             );
-            console.log("📤 Message sent via WebSocket:", msg.content);
+            console.log("📤 Sent via WebSocket:", msg.content);
         } catch (err) {
             console.error("❌ Failed to send message:", err);
-            setMessagesByChat((prev) => ({
-                ...prev,
-                [chatId]: (prev[chatId] || []).map((m) =>
-                    m.sentAt === optimisticMsg.sentAt
-                        ? { ...m, status: "failed" }
-                        : m
-                ),
-            }));
         }
     };
 
-    // ✅ Connect WebSocket once when app starts
+    // ✅ Connect WebSocket once
+    // ✅ Subscribe to WebSocket updates for all chats
     useEffect(() => {
+        if (!user?.id) return;
+
         connectWebSocket(() => {
             console.log("✅ WebSocket connected");
         });
-        loadChatList();
+
+        const initSubscriptions = async () => {
+            try {
+                const res = await fetch(`http://localhost:8080/chats/${user.id}`);
+                const data = await res.json();
+                if (!Array.isArray(data)) return;
+
+                setChatList(data);
+
+                // 🧩 Subscribe to each chat for real-time updates
+                data.forEach((chat) => {
+                    subscribeToChat(chat.id, (savedMsg) => {
+                        console.log(`📡 Received message on chat ${chat.id}:`, savedMsg);
+
+                        // ✅ 1️⃣ Update sidebar preview (last message + timestamp)
+                        setChatList((prev) => {
+                            const updated = prev.map((c) =>
+                                c.id === savedMsg.chatId
+                                    ? {
+                                        ...c,
+                                        lastMessage: savedMsg.content,
+                                        lastMessageTime: savedMsg.sentAt,
+                                    }
+                                    : c
+                            );
+
+                            // ✅ 2️⃣ Sort newest chats first
+                            return updated.sort(
+                                (a, b) =>
+                                    new Date(b.lastMessageTime || 0) -
+                                    new Date(a.lastMessageTime || 0)
+                            );
+                        });
+
+                        // ✅ 3️⃣ Append message to correct chat (if open)
+                        setMessagesByChat((prev) => {
+                            const chatMessages = prev[savedMsg.chatId] || [];
+                            const alreadyExists = chatMessages.some(
+                                (m) =>
+                                    m.id === savedMsg.id ||
+                                    (m.senderId === savedMsg.senderId &&
+                                        m.content === savedMsg.content &&
+                                        Math.abs(
+                                            new Date(m.sentAt) - new Date(savedMsg.sentAt)
+                                        ) < 1000)
+                            );
+                            if (alreadyExists) return prev;
+
+                            return {
+                                ...prev,
+                                [savedMsg.chatId]: [...chatMessages, savedMsg],
+                            };
+                        });
+                    });
+                });
+            } catch (err) {
+                console.error("❌ Failed to initialize subscriptions:", err);
+            }
+        };
+
+        initSubscriptions();
+
+        return () => {
+            // 🧹 Unsubscribe all chats on cleanup
+            chatList.forEach((chat) => unsubscribeFromChat(chat.id));
+        };
     }, [user?.id]);
-    //when chat update
-    // ✅ Subscribe to current chat’s messages
-    useEffect(() => {
-        if (!currentChat?.id) return;
 
-        subscribeToChat(currentChat.id, (savedMsg) => {
-            console.log("📩 Received saved message:", savedMsg);
 
-            setMessagesByChat((prev) => {
-                const existingMessages = prev[currentChat.id] || [];
-
-                // 🔍 Avoid duplicates — compare sender + content + sentAt
-                const isDuplicate = existingMessages.some(
-                    (m) =>
-                        m.senderId === savedMsg.senderId &&
-                        m.content === savedMsg.content &&
-                        Math.abs(new Date(m.sentAt) - new Date(savedMsg.sentAt)) < 1000
-                );
-                if (isDuplicate) {
-                    console.warn("⏩ Skipping duplicate message:", savedMsg.content);
-                    return prev;
-                }
-
-                return {
-                    ...prev,
-                    [currentChat.id]: [...existingMessages, savedMsg],
-                };
-            });
-
-            // 🧠 Update chat preview + sort
-            setChatList((prev) => {
-                const updated = prev.map((chat) =>
-                    chat.id === savedMsg.chatId
-                        ? {
-                            ...chat,
-                            lastMessage: savedMsg.content,
-                            lastMessageTime: savedMsg.sentAt,
-                        }
-                        : chat
-                );
-                return updated.sort(
-                    (a, b) =>
-                        new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
-                );
-            });
-        });
-
-        return () => unsubscribeFromChat(currentChat.id);
-    }, [currentChat]);
-
-    // ✅ Filter sidebar chats
+    //Filter sidebar
     const getFilteredChats = () => {
         if (!Array.isArray(chatList)) return [];
         return chatList.filter((chat) => {
@@ -212,7 +225,7 @@ export function ChatProvider({ children }) {
         chatList,
         currentChat,
         messagesByChat,
-        membersByChat, // ✅ Added
+        membersByChat,
         activeFilter,
         setActiveFilter,
         selectChat,
