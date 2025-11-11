@@ -30,36 +30,47 @@ public class ContactService {
         return contactRepository.findByUserId(id);
     }
     //Create new contact
-    public Contact createContact(Long userId, String lookupValue,String alias) {
-        //try to check username
+    public Contact createContact(Long userId, String lookupValue, String alias) {
+        // 1️⃣ Try to find user by username first
         Optional<User> foundUser = userRepository.findUserByUsername(lookupValue);
-        //then try to check phone number
+
+        // 2️⃣ Then try by phone number
         if (foundUser.isEmpty()) {
             foundUser = userRepository.findByPhoneNumber(lookupValue);
         }
-        if (foundUser.isEmpty()) {
-            throw new RuntimeException("No user found with that username or phone number");
-        }
 
-        Long contactId = foundUser.get().getId();
+        // 3️⃣ Validate user existence
+        User targetUser = foundUser.orElseThrow(
+                () -> new RuntimeException("No user found with that username or phone number")
+        );
 
+        Long contactId = targetUser.getId();
+
+        //Prevent self-adding
         if (userId.equals(contactId)) {
             throw new RuntimeException("You cannot add yourself as a contact.");
         }
+
+        //Prevent duplicate contact
         if (contactRepository.existsByUserIdAndContactId(userId, contactId)) {
             throw new RuntimeException("This contact already exists.");
         }
-
+        //use user’s name if alias is null or blank
+        String finalAlias = (alias == null || alias.trim().isEmpty())
+                ? targetUser.getName()
+                : alias.trim();
+        //Save new contact
         Contact contact = Contact.builder()
                 .userId(userId)
                 .contactId(contactId)
-                .alias(alias)
+                .alias(finalAlias)
                 .createdAt(LocalDateTime.now())
                 .isBlocked(false)
                 .build();
 
         return contactRepository.save(contact);
     }
+
 
     //update
     public Optional<Contact> updateContact(Long id, ContactDTO contactDTO) {
