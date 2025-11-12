@@ -28,8 +28,8 @@ public class ContactController {
     }
     //load the contact by id
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<Contact>>> getAllContactsById(@PathVariable Long userId) {
-        List<Contact> contacts = contactService.getContactsByUserId(userId);
+    public ResponseEntity<ApiResponse<List<ContactDTO>>> getAllContactsById(@PathVariable Long userId) {
+        List<ContactDTO> contacts = contactService.getContactsByUserId(userId);
         return ResponseEntity.ok(new ApiResponse<>("Contacts fetched successfully", contacts));
     }
 

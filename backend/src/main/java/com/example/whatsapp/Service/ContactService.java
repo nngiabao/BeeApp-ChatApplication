@@ -26,8 +26,8 @@ public class ContactService {
     }
 
     //Get contact by ID
-    public List<Contact> getContactsByUserId(Long id) {
-        return contactRepository.findByUserId(id);
+    public List<ContactDTO> getContactsByUserId(Long id) {
+        return contactRepository.findContactsWithUserDetails(id);
     }
     //Create new contact
     public Contact createContact(Long userId, String lookupValue, String alias) {
