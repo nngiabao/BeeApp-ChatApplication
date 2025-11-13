@@ -25,9 +25,10 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     List<Chat> findAllByUserId(@Param("userId") Long userId);
     //this one for slidebar
     @Query("""
-        SELECT DISTINCT c FROM Chat c
-        LEFT JOIN GroupMember gm ON gm.chatId = c.id
-        WHERE c.createdBy = :userId OR gm.userId = :userId
-        """)
+    SELECT DISTINCT c FROM Chat c
+    LEFT JOIN GroupMember gm ON gm.chatId = c.id
+    WHERE c.createdBy = :userId OR gm.userId = :userId
+""")
     List<Chat> findAllChatsInvolvingUser(@Param("userId") Long userId);
+
 }

@@ -8,6 +8,7 @@ import com.example.whatsapp.Entity.Message;
 import com.example.whatsapp.Repository.ChatRepository;
 import com.example.whatsapp.Repository.GroupMemberRepository;
 import com.example.whatsapp.Repository.MessageRepository;
+import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,25 +23,50 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final UserRepository userRepository;
 
     // ✅ Sidebar chat list (lightweight)
     public List<ChatDTO> getAllChatsForUser(Long userId) {
         List<Chat> chats = chatRepository.findAllChatsInvolvingUser(userId);
 
         return chats.stream().map(chat -> {
+            // 🧩 Get latest message for preview
             Message lastMsg = messageRepository
                     .findTopByChatIdOrderBySentAtDesc(chat.getId())
                     .orElse(null);
 
-            return ChatDTO.builder()
+            ChatDTO.ChatDTOBuilder builder = ChatDTO.builder()
                     .id(chat.getId())
-                    .title(chat.getTitle())
                     .type(chat.getType())
+                    .title(chat.getTitle())
+                    .createdBy(chat.getCreatedBy())
+                    .createdAt(chat.getCreatedAt())
                     .lastMessage(lastMsg != null ? lastMsg.getContent() : null)
-                    .lastMessageTime(lastMsg != null ? lastMsg.getSentAt() : null)
-                    .build();
-        }).toList();
+                    .lastMessageTime(lastMsg != null ? lastMsg.getSentAt() : null);
+
+            // 🧩 Add contact info for PRIVATE chats
+            if ("PRIVATE".equalsIgnoreCase(chat.getType())) {
+                List<GroupMember> members = groupMemberRepository.findByChatId(chat.getId());
+                Long otherUserId = members.stream()
+                        .map(GroupMember::getUserId)
+                        .filter(id -> !id.equals(userId))
+                        .findFirst()
+                        .orElse(null);
+
+                if (otherUserId != null) {
+                    userRepository.findById(otherUserId).ifPresent(other -> {
+                        builder.contactId(other.getId());
+                        builder.title(other.getName() != null ? other.getName() : other.getUsername());
+                        builder.imgUrl(other.getProfilePicture());
+                    });
+                }
+            }
+
+            return builder.build();
+        }).collect(Collectors.toList());
     }
+
+
 
     //Create a new group
     public ChatDTO createGroupChat(CreateGroupRequestDTO req) {
@@ -49,6 +75,7 @@ public class ChatService {
                 .type("GROUP")
                 .createdBy(req.getCreatedBy())
                 .createdAt(LocalDateTime.now())
+                .chatImageUrl(req.getImgUrl())
                 .build();
 
         Chat savedChat = chatRepository.save(chat);
@@ -80,6 +107,20 @@ public class ChatService {
                 .build();
 
         Chat saved = chatRepository.save(chat);
+        //add group memeber
+        Long id = saved.getId();
+
+        groupMemberRepository.save(GroupMember.builder()
+                .chatId(id)
+                .userId(chatRequest.getCreatedBy())
+                .role("MEMBER")
+                .build());
+
+        groupMemberRepository.save(GroupMember.builder()
+                .chatId(id)
+                .userId(chatRequest.getContactId())
+                .role("MEMBER")
+                .build());
 
         return ChatDTO.builder()
                 .id(saved.getId())
