@@ -61,6 +61,7 @@ export function ChatProvider({ children }) {
             try {
                 const res = await fetch(`http://localhost:8080/messages/chat/${chatId}`);
                 const data = await res.json();
+                console.log("message load" + data.data);
                 if (Array.isArray(data.data)) {
                     setMessagesByChat((prev) => ({
                         ...prev,
