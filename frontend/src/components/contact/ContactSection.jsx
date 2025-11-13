@@ -1,3 +1,4 @@
+// src/components/contacts/ContactSection.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useContactList } from "../context/ContactContext";
 import { useChat } from "../context/ChatContext";
@@ -6,8 +7,8 @@ import { UserX, Trash2, MessageCircle, Ban, Star } from "lucide-react";
 
 export default function ContactSection() {
     const { contacts, loading, error } = useContactList();
-    const { selectChat } = useChat();
-    const { user } = useUser(); // ✅ Correct hook
+    const { chatList, selectChat, setChatList } = useChat();
+    const { user } = useUser();
 
     const [menuPos, setMenuPos] = useState(null);
     const [selectedContact, setSelectedContact] = useState(null);
@@ -41,22 +42,36 @@ export default function ContactSection() {
         setMenuPos(null);
     };
 
-    // 🧩 Open chat on click
+    // 🧠 Open or create private chat
     const handleOpenChat = async (contact) => {
         try {
+            // 1️⃣ Check if a chat already exists with this contact
+            const existingChat = chatList.find(
+                (chat) =>
+                    chat.type === "PRIVATE" &&
+                    (chat.title === contact.alias || chat.title === contact.contactName)
+            );
+
+            if (existingChat) {
+                console.log("✅ Chat already exists, opening it...");
+                selectChat(existingChat);
+                return;
+            }
+
+            // 2️⃣ Create new chat if not found
             const body = {
                 title: contact.alias || contact.contactName,
-                createdBy: user.id, // ✅ current logged-in user
-                type: "PRIVATE",
+                createdBy: user.id,
+                contactId: contact.contactId,
             };
 
             const res = await fetch("http://localhost:8080/chats/create", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json", // ✅ tell backend body is JSON
-                    "Accept": "application/json",        // ✅ tell backend we expect JSON
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
                 },
-                body: JSON.stringify(body),              // ✅ convert to JSON string
+                body: JSON.stringify(body),
             });
 
             if (!res.ok) {
@@ -64,16 +79,21 @@ export default function ContactSection() {
             }
 
             const chat = await res.json();
-            selectChat(chat); // ✅ instantly open chat window
+
+            // 3️⃣ Add to context and open
+            setChatList((prev) => [...prev, chat]);
+            selectChat(chat);
+
+            console.log("🟢 Created new chat:", chat);
         } catch (err) {
-            console.error("❌ Failed to open chat:", err);
+            console.error("❌ Failed to open or create chat:", err);
         }
     };
-
 
     return (
         <div className="relative">
             <h2 className="text-sm text-gray-500 mb-2">Contacts on BeeApp</h2>
+
             <div className="space-y-1">
                 {visibleContacts.length === 0 ? (
                     <p className="text-gray-400 text-sm">No available contacts.</p>
@@ -81,17 +101,25 @@ export default function ContactSection() {
                     visibleContacts.map((contact) => (
                         <div
                             key={contact.id}
-                            onClick={() => handleOpenChat(contact)} // 👈 Open chat
+                            onClick={() => handleOpenChat(contact)} // 👈 Left click opens chat
                             onContextMenu={(e) => handleContextMenu(e, contact)}
                             className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition"
                         >
                             {/* Avatar */}
-                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
-                                <span className="text-sm font-semibold">
-                                    {contact.alias
-                                        ? contact.alias.charAt(0).toUpperCase()
-                                        : "?"}
-                                </span>
+                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center overflow-hidden text-white">
+                                {contact.imageUrl ? (
+                                    <img
+                                        src={contact.imageUrl}
+                                        alt={contact.alias || "User"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm font-semibold">
+                                        {contact.alias
+                                            ? contact.alias.charAt(0).toUpperCase()
+                                            : "?"}
+                                    </span>
+                                )}
                             </div>
 
                             {/* Info */}

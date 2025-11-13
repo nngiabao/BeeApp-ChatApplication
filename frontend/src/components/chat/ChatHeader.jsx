@@ -66,23 +66,19 @@ export default function ChatHeader() {
                                 <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <Info className="w-4 h-4 mr-2" /> Group info
                                 </button>
-                                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <XCircle className="w-4 h-4 mr-2" /> Clear chat
-                                </button>
                                 <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 border-t border-gray-200">
                                     <LogOut className="w-4 h-4 mr-2" /> Exit group
                                 </button>
                             </>
                         ) : (
                             <>
-                                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <Info className="w-4 h-4 mr-2" /> View contact
+                                <button
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Info className="w-4 h-4 mr-2"/> View contact
                                 </button>
-                                <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 border-t border-gray-200">
-                                    <UserX className="w-4 h-4 mr-2" /> Block contact
-                                </button>
-                                <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Delete chat
+                                <button
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Info className="w-4 h-4 mr-2"/> Block contact
                                 </button>
                             </>
                         )}
