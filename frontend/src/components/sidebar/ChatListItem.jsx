@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useChat } from "../context/ChatContext";
-
+import { useContactList } from "../context/ContactContext";
 
 export default function ChatListItem() {
     const {
@@ -12,22 +12,37 @@ export default function ChatListItem() {
         getFilteredChats,
     } = useChat();
 
-    // Load chat list on mount
+    const { contacts } = useContactList();
+
+    // Load chat list when component mounts
     useEffect(() => {
         loadChatList();
     }, []);
 
-    // ✅ Auto-sort chats by latest message
+    // ✅ Sort and filter chats — only show those with a last message
     const sortedChats = useMemo(() => {
-        const filtered = getFilteredChats();
+        const filtered = getFilteredChats()
+            .filter((chat) => chat.lastMessage && chat.lastMessage.trim() !== ""); // ⬅️ filter out empty ones
         return filtered.sort(
             (a, b) =>
                 new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
         );
-    }, [chatList, activeFilter]); // rerun whenever new chat data arrives
+    }, [chatList, activeFilter]);
 
     if (!sortedChats.length)
-        return <p className="p-4 text-gray-500 text-center">No chats available.</p>;
+        return <p className="p-4 text-gray-500 text-center">No active chats yet.</p>;
+
+    // ✅ Helper: get contact info for private chat
+    const getPrivateChatInfo = (chat) => {
+        if (chat.type !== "PRIVATE") return {};
+        const match = contacts.find(
+            (c) => c.contactId === chat.otherUserId || c.contactId === chat.createdBy
+        );
+        return {
+            name: match?.alias || match?.contactName || "Unknown User",
+            imgUrl: match?.profilePicture || "../../assets/mainpage.png",
+        };
+    };
 
     return (
         <div className="overflow-y-auto">
@@ -40,6 +55,15 @@ export default function ChatListItem() {
                     })
                     : "";
 
+                // 🧩 Fallback for private chats without title
+                const { name, imgUrl } =
+                    chat.type === "PRIVATE" && !chat.title
+                        ? getPrivateChatInfo(chat)
+                        : {
+                            name: chat.title || "Unnamed Chat",
+                            imgUrl: chat.imgUrl || "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png",
+                        };
+
                 return (
                     <div
                         key={chat.id}
@@ -50,34 +74,27 @@ export default function ChatListItem() {
                     >
                         {/* Avatar */}
                         <img
-                            src={
-                                chat.type === "GROUP"
-                                    ? chat.chatImageUrl || "../../assets/mainpage.png"
-                                    : `https://chatapp-beeapp.s3.us-east-2.amazonaws.com/group/test1.jpg`
-                            }
-                            alt={chat.title}
-                            className="w-10 h-10 rounded-full mr-3"
+                            src={imgUrl}
+                            alt={name}
+                            className="w-10 h-10 rounded-full mr-3 object-cover"
                         />
-
 
                         {/* Chat Info */}
                         <div className="flex-1">
                             <div className="flex justify-between items-center">
-                                <h2 className="font-medium text-gray-800 truncate">
-                                    {chat.title}
-                                </h2>
-                                <span className="text-xs text-gray-500">
-                                    {lastMessageTime}
-                                </span>
+                                <h2 className="font-medium text-gray-800 truncate">{name}</h2>
+                                <span className="text-xs text-gray-500">{lastMessageTime}</span>
                             </div>
 
-                            {/* Last message preview */}
+                            {/* ✅ Display last message only */}
                             <p
                                 className={`text-sm truncate ${
-                                    chat.unread ? "font-semibold text-green-700" : "text-gray-500"
+                                    chat.unread
+                                        ? "font-semibold text-green-700"
+                                        : "text-gray-500"
                                 }`}
                             >
-                                {chat.lastMessage || "Start a chat"}
+                                {chat.lastMessage}
                             </p>
                         </div>
                     </div>
