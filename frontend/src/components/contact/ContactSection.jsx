@@ -45,46 +45,37 @@ export default function ContactSection() {
     // 🧠 Open or create private chat
     const handleOpenChat = async (contact) => {
         try {
-            // 1️⃣ Check if a chat already exists with this contact
+            // 1️⃣ Check if chat already exists locally
             const existingChat = chatList.find(
                 (chat) =>
                     chat.type === "PRIVATE" &&
-                    (chat.title === contact.alias || chat.title === contact.contactName)
+                    chat.members?.some((m) => m.userId === contact.contactId)
             );
 
             if (existingChat) {
-                console.log("✅ Chat already exists, opening it...");
+                console.log("✅ Chat already exists, opening it:", existingChat.id);
                 selectChat(existingChat);
                 return;
             }
 
-            //Create new chat if not found
+            // 2️⃣ Otherwise create a new chat
             const body = {
                 title: contact.alias || contact.contactName,
                 createdBy: user.id,
-                contactId: contact.contactId,
+                recipientId: contact.contactId,
             };
 
             const res = await fetch("http://localhost:8080/chats/create", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             });
 
-            if (!res.ok) {
-                throw new Error(`Failed to create chat (${res.status})`);
-            }
+            if (!res.ok) throw new Error("Failed to create chat");
 
             const chat = await res.json();
-
-            // 3️⃣ Add to context and open
             setChatList((prev) => [...prev, chat]);
             selectChat(chat);
-
-            console.log("🟢 Created new chat:", chat);
         } catch (err) {
             console.error("❌ Failed to open or create chat:", err);
         }
