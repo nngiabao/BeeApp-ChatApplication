@@ -16,4 +16,5 @@ public class ChatDTO {
     private String lastMessage;
     private LocalDateTime lastMessageTime;
     private String imgUrl;
+    private Long contactId;
 }

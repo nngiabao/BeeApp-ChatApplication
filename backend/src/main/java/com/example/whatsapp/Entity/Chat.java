@@ -34,7 +34,7 @@ public class Chat {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "title", length = 100, nullable = false)
+    @Column(name = "title", length = 100)
     private String title;
 
     @Column(name = "created_by", nullable = false)
