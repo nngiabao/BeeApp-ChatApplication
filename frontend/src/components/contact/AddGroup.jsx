@@ -42,6 +42,7 @@ export default function AddGroupPanel({ onBack }) {
         const requestBody = {
             groupName: groupData.groupName,
             createdBy: user.id,
+            imgUrl: groupData.imgUrl,
             memberIds,
         };
 
@@ -131,7 +132,11 @@ export default function AddGroupPanel({ onBack }) {
                         >
                             <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                                 <span className="text-sm font-semibold">
-                                    {contact.alias?.charAt(0).toUpperCase() || "?"}
+                                     <img
+                                         src={contact.profilePicture || "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"}
+                                         alt={contact.name}
+                                         className="w-10 h-10 rounded-full object-cover"
+                                     />
                                 </span>
                             </div>
                             <div className="flex-1">
@@ -139,7 +144,7 @@ export default function AddGroupPanel({ onBack }) {
                                     {contact.alias}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                    {contact.status ||
+                                    {contact.statusMessage ||
                                         "Hey there! I’m using BeeApp."}
                                 </p>
                             </div>

@@ -28,12 +28,6 @@ export default function AddContactPanel({ onBack }) {
 
             //If backend sends new contact in response, add it to global context
             addContact(res.data.data);
-          /*  if (res.data && res.data.data) {
-                // assumes your backend wraps it in { message, data: { ... } }
-            } else if (res.data && res.data.id) {
-                addContact(res.data); // if backend returns raw contact
-            }*/
-
             setMessage("Contact added successfully!");
             setContact({ name: "", lookUp: "" });
         } catch (error) {
@@ -83,7 +77,7 @@ export default function AddContactPanel({ onBack }) {
                 </button>
             </form>
             {message && (
-                <p className="mt-4 text-sm text-center text-gray-700">{message}</p>
+                <p className="mt-4 text-lg text-center text-green-600">{message}</p>
             )}
         </div>
     );

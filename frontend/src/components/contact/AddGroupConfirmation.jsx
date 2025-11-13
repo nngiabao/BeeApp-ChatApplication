@@ -72,9 +72,10 @@ export default function NewGroupPanel({ onBack, onCreated, members = [] }) {
                         key={m.id}
                         className="flex flex-col items-center text-center"
                     >
-                        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white mb-1">
-                            {m.alias?.charAt(0).toUpperCase() || "?"}
-                        </div>
+                        <img className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white mb-1"
+                             src={m.profilePicture || "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"}
+                             alt={m.name} >
+                        </img>
                         <p className="text-xs text-gray-700 font-medium truncate w-14">
                             {m.alias}
                         </p>
