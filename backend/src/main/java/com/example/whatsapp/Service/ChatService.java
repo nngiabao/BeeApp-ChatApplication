@@ -25,12 +25,12 @@ public class ChatService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
 
-    // ✅ Sidebar chat list (lightweight)
+    //Sidebar chat list (lightweight)
     public List<ChatDTO> getAllChatsForUser(Long userId) {
         List<Chat> chats = chatRepository.findAllChatsInvolvingUser(userId);
 
         return chats.stream().map(chat -> {
-            // 🧩 Get latest message for preview
+            //Get latest message for preview
             Message lastMsg = messageRepository
                     .findTopByChatIdOrderBySentAtDesc(chat.getId())
                     .orElse(null);
@@ -44,7 +44,7 @@ public class ChatService {
                     .lastMessage(lastMsg != null ? lastMsg.getContent() : null)
                     .lastMessageTime(lastMsg != null ? lastMsg.getSentAt() : null);
 
-            // 🧩 Add contact info for PRIVATE chats
+            // Add contact info for PRIVATE chats
             if ("PRIVATE".equalsIgnoreCase(chat.getType())) {
                 List<GroupMember> members = groupMemberRepository.findByChatId(chat.getId());
                 Long otherUserId = members.stream()
