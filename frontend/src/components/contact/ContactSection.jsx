@@ -58,7 +58,7 @@ export default function ContactSection() {
                 return;
             }
 
-            // 2️⃣ Create new chat if not found
+            //Create new chat if not found
             const body = {
                 title: contact.alias || contact.contactName,
                 createdBy: user.id,
@@ -107,9 +107,9 @@ export default function ContactSection() {
                         >
                             {/* Avatar */}
                             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center overflow-hidden text-white">
-                                {contact.imageUrl ? (
+                                {contact.profilePicture ? (
                                     <img
-                                        src={contact.imageUrl}
+                                        src={contact.profilePicture}
                                         alt={contact.alias || "User"}
                                         className="w-full h-full object-cover"
                                     />
