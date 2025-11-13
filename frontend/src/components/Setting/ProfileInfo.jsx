@@ -17,7 +17,9 @@ export default function ProfileInfo() {
     const [about, setAbout] = useState();
 
     const handleLogout = () => {
+
         localStorage.clear();
+
         window.location.href = "/";
     };
     //update name
