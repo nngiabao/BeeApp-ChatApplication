@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil, Phone, Copy, Lock, LogOut } from "lucide-react";
+import { Pencil, Phone, Lock, LogOut } from "lucide-react";
 import { useUser } from "../context/UserContext.jsx";
 
 export default function ProfileInfo() {
@@ -12,46 +12,81 @@ export default function ProfileInfo() {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
-    const [name, setName] = useState();
-    const [phone, setPhone] = useState();
-    const [about, setAbout] = useState();
+    const [name, setName] = useState(user.name || "");
+    const [phone, setPhone] = useState(user.phoneNumber || "");
+    const [about, setAbout] = useState(user.statusMessage || "");
 
-    const handleLogout = () => {
+    const [errors, setErrors] = useState({ name: "", phone: "", about: "" });
 
+    const handleLogout = async () => {
+        try {
+            await fetch("http://localhost:8080/users/logout", {
+                method: "POST",
+                userName: user.username,
+            });
+        } catch (err) {
+            console.error("Logout request failed:", err);
+        }
         localStorage.clear();
-
         window.location.href = "/";
     };
-    //update name
+
+    // ✅ Validation regex patterns
+    const nameRegex = /^[A-Za-z0-9\s]{1,32}$/;     // letters + digits + spaces
+    const aboutRegex = /^[A-Za-z0-9\s.,!?'"-]{0,50}$/; // up to 50 characters, allow punctuation
+    const phoneRegex = /^\d{10}$/;                  // exactly 10 digits
+
+    // ✅ Name
     const handleSaveName = async () => {
+        if (!nameRegex.test(name)) {
+            setErrors((prev) => ({
+                ...prev,
+                name: "Name must be up to 32 letters or digits only.",
+            }));
+            return;
+        }
+        setErrors((prev) => ({ ...prev, name: "" }));
         setIsEditingName(false);
-        await updateUser({ name });  //
+        await updateUser({ name });
     };
-    //update phone
+
+    // ✅ Phone
     const handlePhoneSave = async () => {
+        if (!phoneRegex.test(phone)) {
+            setErrors((prev) => ({
+                ...prev,
+                phone: "Phone number must be exactly 10 digits.",
+            }));
+            return;
+        }
+        setErrors((prev) => ({ ...prev, phone: "" }));
         setIsEditingPhone(false);
         await updateUser({ phoneNumber: phone });
     };
-    //update about
+
+    // ✅ About
     const handleAboutSave = async () => {
+        if (!aboutRegex.test(about)) {
+            setErrors((prev) => ({
+                ...prev,
+                about: "About section: up to 50 characters (letters, digits, .,!?)",
+            }));
+            return;
+        }
+        setErrors((prev) => ({ ...prev, about: "" }));
         setIsEditingAbout(false);
         await updateUser({ statusMessage: about });
     };
-    //update pw
-    const handlePasswordSave = async (e) => {
-        e.preventDefault(); // stop page reload
 
+    // ✅ Password
+    const handlePasswordSave = async (e) => {
+        e.preventDefault();
         if (newPassword !== confirmPassword) {
             alert("New passwords do not match");
             return;
         }
-
         await changePassword(oldPassword, newPassword);
-
-        //Close popup after success
         setShowPasswordForm(false);
-
-        //Clear input fields
         setOldPassword("");
         setNewPassword("");
         setConfirmPassword("");
@@ -80,7 +115,9 @@ export default function ProfileInfo() {
                         onClick={() => setIsEditingName(true)}
                     />
                 </div>
+                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
+
             {/* About */}
             <div className="mb-6">
                 <label className="block text-sm text-gray-500 mb-1">About</label>
@@ -102,7 +139,9 @@ export default function ProfileInfo() {
                         onClick={() => setIsEditingAbout(true)}
                     />
                 </div>
+                {errors.about && <p className="text-xs text-red-500 mt-1">{errors.about}</p>}
             </div>
+
             {/* Phone */}
             <div className="mb-6">
                 <label className="block text-sm text-gray-500 mb-1">Phone</label>
@@ -127,8 +166,10 @@ export default function ProfileInfo() {
                         onClick={() => setIsEditingPhone(true)}
                     />
                 </div>
+                {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
             </div>
-            {/* Change Password (Like Phone Field) */}
+
+            {/* Password */}
             <div className="mb-6">
                 <label className="block text-sm text-gray-500 mb-1">Password</label>
                 <div className="flex items-center justify-between">
@@ -143,7 +184,7 @@ export default function ProfileInfo() {
                 </div>
             </div>
 
-            {/* Logout Button */}
+            {/* Logout */}
             <div
                 onClick={handleLogout}
                 className="flex items-center space-x-3 bg-[#faf9f8] px-4 py-3 rounded-xl cursor-pointer hover:bg-red-50 transition duration-200"
@@ -152,7 +193,7 @@ export default function ProfileInfo() {
                 <span className="text-red-600 font-medium text-sm">Log out</span>
             </div>
 
-            {/* Password Change Popup */}
+            {/* Password Popup */}
             {showPasswordForm && (
                 <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
                     <div className="bg-white rounded-2xl shadow-lg p-6 w-80">

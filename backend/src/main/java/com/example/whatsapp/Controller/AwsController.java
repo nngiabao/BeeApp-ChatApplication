@@ -30,7 +30,7 @@ public class AwsController {
         String bucketName = dotenv.get("AWS_S3_BUCKET");
 
         try {
-            if (!type.equals("file") && !type.equals("group") && !type.equals("individual")) {
+            if (!type.equals("file") && !type.equals("group") && !type.equals("invidual")) {
                 return ResponseEntity.badRequest().body("Invalid folder type");
             }
 

@@ -41,6 +41,7 @@ public class ChatService {
                     .title(chat.getTitle())
                     .createdBy(chat.getCreatedBy())
                     .createdAt(chat.getCreatedAt())
+                    .imgUrl(chat.getChatImageUrl())
                     .lastMessage(lastMsg != null ? lastMsg.getContent() : null)
                     .lastMessageTime(lastMsg != null ? lastMsg.getSentAt() : null);
 
