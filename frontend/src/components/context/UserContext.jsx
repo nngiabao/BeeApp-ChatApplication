@@ -18,7 +18,7 @@ export function UserProvider({ children }) {
                 phoneNumber: updatedFields.phoneNumber || user.phoneNumber,
                 name: updatedFields.name ?? user.name,
                 statusMessage: updatedFields.statusMessage ?? user.statusMessage,
-                profilePicture: user.profilePicture,
+                profilePicture: updatedFields.profilePicture,
                 isOnline: user.isOnline,
                 accountType: user.accountType,
             };
