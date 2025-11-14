@@ -57,6 +57,20 @@ public class UserController {
                         .body(new ApiResponse<>("User not found", null)));
     }
 
+    //update profile picture
+    @PutMapping("/{userId}/profile-picture")
+    public ResponseEntity<?> updateProfilePicture(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> body) {
+
+        String imgUrl = body.get("imgUrl");
+        if (imgUrl == null || imgUrl.isBlank()) {
+            return ResponseEntity.badRequest().body("Image URL is required");
+        }
+
+        userService.updateProfilePicture(userId, imgUrl);
+        return ResponseEntity.ok("Profile picture updated successfully");
+    }
 
     //delete
     @DeleteMapping("/{id}")

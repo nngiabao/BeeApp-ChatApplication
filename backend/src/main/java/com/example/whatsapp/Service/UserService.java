@@ -41,6 +41,7 @@ public class UserService {
             user.setProfilePicture(userDTO.getProfilePicture());
             user.setIsOnline(userDTO.getIsOnline());
             user.setAccountType(userDTO.getAccountType());
+            user.setProfilePicture(userDTO.getProfilePicture());
             return userRepository.save(user);
         });
     }
@@ -69,6 +70,13 @@ public class UserService {
         userRepository.save(user);
 
         return new ApiResponse<>("Password updated successfully", null);
+    }
+    //update profile picture
+    public void updateProfilePicture(Long userId, String imgUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setProfilePicture(imgUrl);
+        userRepository.save(user);
     }
 
 
