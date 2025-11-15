@@ -49,12 +49,20 @@ public class UserController {
     public ResponseEntity<ApiResponse<User>> updateUser(
             @PathVariable Long id,
             @RequestBody UserDTO userDTO) {
-
-        return userService.updateUser(id, userDTO)
-                .map(updatedUser -> ResponseEntity.ok(
-                        new ApiResponse<>("User updated successfully", updatedUser)))
-                .orElse(ResponseEntity.status(404)
-                        .body(new ApiResponse<>("User not found", null)));
+        try {
+            return userService.updateUser(id, userDTO)
+                    .map(updatedUser -> ResponseEntity.ok(
+                            new ApiResponse<>("User updated successfully", updatedUser)))
+                    .orElse(ResponseEntity.status(404)
+                            .body(new ApiResponse<>("User not found", null)));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Phone number already in use")) {
+                return ResponseEntity.status(409)
+                        .body(new ApiResponse<>("Phone number already in use", null));
+            }
+            return ResponseEntity.status(400)
+                    .body(new ApiResponse<>(e.getMessage(), null));
+        }
     }
 
     //update profile picture
