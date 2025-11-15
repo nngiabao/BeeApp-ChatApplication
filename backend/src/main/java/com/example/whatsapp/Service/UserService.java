@@ -29,22 +29,37 @@ public class UserService {
     }
 
     //update
+    // update user details
     public Optional<User> updateUser(Long id, UserDTO userDTO) {
         return userRepository.findById(id).map(user -> {
+
+            // ✅ Check for duplicate phone numbers
+            String newPhone = userDTO.getPhoneNumber();
+            if (newPhone != null && !newPhone.equals(user.getPhoneNumber())) {
+                boolean exists = userRepository.existsByPhoneNumber(newPhone);
+                if (exists) {
+                    throw new RuntimeException("Phone number already in use");
+                }
+                user.setPhoneNumber(newPhone);
+            }
+
+            // update other fields
             user.setUsername(userDTO.getUsername());
-            user.setPhoneNumber(userDTO.getPhoneNumber());
+            user.setName(userDTO.getName());
+            user.setStatusMessage(userDTO.getStatusMessage());
+
             if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
                 user.setPassword(userDTO.getPassword());
             }
-            user.setName(userDTO.getName());
-            user.setStatusMessage(userDTO.getStatusMessage());
+
             user.setProfilePicture(userDTO.getProfilePicture());
             user.setIsOnline(userDTO.getIsOnline());
             user.setAccountType(userDTO.getAccountType());
-            user.setProfilePicture(userDTO.getProfilePicture());
+
             return userRepository.save(user);
         });
     }
+
     //delete
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
