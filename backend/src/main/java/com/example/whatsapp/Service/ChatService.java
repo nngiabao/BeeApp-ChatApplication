@@ -101,7 +101,6 @@ public class ChatService {
     //create chat private
     public ChatDTO createIndividualChat(ChatDTO chatRequest) {
         Chat chat = Chat.builder()
-                .title(chatRequest.getTitle())
                 .type("PRIVATE")
                 .createdBy(chatRequest.getCreatedBy())
                 .createdAt(LocalDateTime.now())
