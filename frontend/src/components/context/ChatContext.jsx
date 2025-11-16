@@ -48,7 +48,7 @@ export function ChatProvider({ children }) {
         }
     };
 
-    // ✅ Select a chat (and load messages + members if not cached)
+    //Select a chat (and load messages + members if not cached)
     const selectChat = async (chat) => {
         if (!chat) return;
         setCurrentChat(chat);
@@ -244,7 +244,7 @@ export function ChatProvider({ children }) {
         });
     };
 
-    // 🧩 Expose everything
+    //Expose everything
     const value = {
         chatList, //
         setChatList, //this for all chats have saved in DB
@@ -254,6 +254,7 @@ export function ChatProvider({ children }) {
         activeFilter,
         setActiveFilter,
         selectChat, //select chat to open in chat window
+        loadGroupMembers,
         sendMessage,
         loadChatList,
         getFilteredChats,

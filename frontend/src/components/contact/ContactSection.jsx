@@ -53,8 +53,11 @@ export default function ContactSection() {
             );
 
             if (existingChat) {
-                console.log("✅ Chat already exists, opening it:", existingChat.id);
-                selectChat(existingChat);
+                const finalChat = {
+                    ...existingChat,
+                    imgUrl: contact.profilePicture,  // pass img url
+                };
+                selectChat(finalChat);
                 return;
             }
 
@@ -62,7 +65,7 @@ export default function ContactSection() {
             const body = {
                 title: contact.alias || contact.contactName,
                 createdBy: user.id,
-                recipientId: contact.contactId,
+                contactId: contact.contactId,
             };
 
             const res = await fetch("http://localhost:8080/chats/create", {
@@ -74,8 +77,15 @@ export default function ContactSection() {
             if (!res.ok) throw new Error("Failed to create chat");
 
             const chat = await res.json();
-            setChatList((prev) => [...prev, chat]);
-            selectChat(chat);
+            const finalChat = {
+                ...chat,
+                imgUrl: contact.profilePicture,   //
+                alias: contact.alias,
+                contactId: contact.contactId,
+            };
+
+            setChatList((prev) => [...prev, finalChat]);
+            selectChat(finalChat);
         } catch (err) {
             console.error("❌ Failed to open or create chat:", err);
         }
