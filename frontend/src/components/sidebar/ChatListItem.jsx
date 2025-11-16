@@ -32,15 +32,23 @@ export default function ChatListItem() {
     if (!sortedChats.length)
         return <p className="p-4 text-gray-500 text-center">No active chats yet.</p>;
 
-    // ✅ Helper: get contact info for private chat
+    //get contact info for private chat
     const getPrivateChatInfo = (chat) => {
         if (chat.type !== "PRIVATE") return {};
+
         const match = contacts.find(
-            (c) => c.contactId === chat.otherUserId || c.contactId === chat.createdBy
+            (c) =>
+                c.contactId === chat.otherUserId ||   // From backend
+                c.contactId === chat.contactId ||      // From ContactSection
+                chat.title === c.alias ||              // Title fallback
+                chat.title === c.contactName
         );
+
         return {
-            name: match?.alias || match?.contactName || "Unknown User",
-            imgUrl: match?.profilePicture || "../../assets/mainpage.png",
+            name: match?.alias || match?.contactName || chat.title || "Unknown User",
+            imgUrl: match?.profilePicture ||
+                chat.imgUrl ||
+                "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png",
         };
     };
 
@@ -56,18 +64,27 @@ export default function ChatListItem() {
                     : "";
 
                 // 🧩 Fallback for private chats without title
-                const { name, imgUrl } =
-                    chat.type === "PRIVATE" && !chat.title
-                        ? getPrivateChatInfo(chat)
-                        : {
-                            name: chat.title || "Unnamed Chat",
-                            imgUrl: chat.imgUrl || "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png",
-                        };
+                const privateInfo = getPrivateChatInfo(chat);
+
+                const name =
+                    chat.type === "PRIVATE" ? privateInfo.name : chat.title;
+
+                const imgUrl =
+                    chat.type === "PRIVATE"
+                        ? privateInfo.imgUrl
+                        : chat.imgUrl ||
+                        "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png";
 
                 return (
                     <div
                         key={chat.id}
-                        onClick={() => selectChat(chat)}
+                        onClick={() =>
+                            selectChat({
+                                ...chat,
+                                imgUrl,
+                                title: name
+                            })
+                        }
                         className={`flex items-center p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-100 transition ${
                             isActive ? "bg-green-50" : ""
                         }`}
