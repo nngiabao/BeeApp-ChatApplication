@@ -1,45 +1,58 @@
-import React from "react";
-import { Home, Users, Settings, BarChart } from "lucide-react";
+import React, { useState } from "react";
+import Sidebar from "../../components/admin/Sidebar.jsx";
+import Users from "../../components/admin/User_management.jsx";
+
+// Dummy content components
+const DashboardOverview = () => (
+    <div>
+        <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="bg-white shadow rounded-2xl p-6">Total Users: 1200</div>
+            <div className="bg-white shadow rounded-2xl p-6">Active Chats: 856</div>
+            <div className="bg-white shadow rounded-2xl p-6">Files Shared: 340</div>
+        </div>
+    </div>
+);
+
+const UserManagement = () => (
+    <div>
+        <h2 className="text-3xl font-bold mb-6">User Management</h2>
+        <div className="bg-white shadow rounded-2xl p-6">User list will be displayed here.</div>
+    </div>
+);
+
+const Analytics = () => (
+    <div>
+        <h2 className="text-3xl font-bold mb-6">Analytics</h2>
+        <div className="bg-white shadow rounded-2xl p-6">Analytics charts and stats go here.</div>
+    </div>
+);
+
+const SettingsPage = () => (
+    <div>
+        <h2 className="text-3xl font-bold mb-6">Settings</h2>
+        <div className="bg-white shadow rounded-2xl p-6">Settings content will be shown here.</div>
+    </div>
+);
 
 export default function AdminDashboardLayout() {
+    const [activePage, setActivePage] = useState("dashboard");
+
+    const renderPage = () => {
+        switch (activePage) {
+            case "dashboard": return <DashboardOverview />;
+            case "users": return <Users />;
+            case "analytics": return <Analytics />;
+            case "settings": return <SettingsPage />;
+            default: return <DashboardOverview />;
+        }
+    };
+
     return (
         <div className="flex h-screen w-full bg-gray-100">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white shadow-xl p-6 flex flex-col">
-                <h1 className="text-2xl font-bold mb-8">Admin Panel</h1>
-
-                <nav className="flex flex-col space-y-4">
-                    <button className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 cursor-pointer">
-                        <Home size={20} />
-                        <span>Dashboard</span>
-                    </button>
-
-                    <button className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 cursor-pointer">
-                        <Users size={20} />
-                        <span>User Management</span>
-                    </button>
-
-                    <button className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 cursor-pointer">
-                        <BarChart size={20} />
-                        <span>Analytics</span>
-                    </button>
-
-                    <button className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 cursor-pointer">
-                        <Settings size={20} />
-                        <span>Settings</span>
-                    </button>
-                </nav>
-            </aside>
-
-            {/* Main Content */}
+            <Sidebar setActivePage={setActivePage} />
             <main className="flex-1 p-10 overflow-y-auto">
-                <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div className="bg-white shadow rounded-2xl p-6">Total Users: 1200</div>
-                    <div className="bg-white shadow rounded-2xl p-6">Active Chats: 856</div>
-                    <div className="bg-white shadow rounded-2xl p-6">Files Shared: 340</div>
-                </div>
+                {renderPage()}
             </main>
         </div>
     );
