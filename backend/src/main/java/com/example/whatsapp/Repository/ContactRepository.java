@@ -30,4 +30,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     WHERE c.userId = :userId
 """)
     List<ContactDTO> findContactsWithUserDetails(@Param("userId") Long userId);
+    //count blocked contacts
+    long countByIsBlockedTrue();
 }

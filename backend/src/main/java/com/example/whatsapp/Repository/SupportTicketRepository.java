@@ -8,4 +8,12 @@ import java.util.*;
 
 public interface SupportTicketRepository extends JpaRepository<TicketSupport, Long> {
     public List<TicketSupport> findByUserId(Long id);
+    //
+    List<TicketSupport> findTop5ByOrderByCreatedAtDesc();
+    //
+    Long countByStatus(String status);
+    //
+    List<TicketSupport> findByUser_NameContainingIgnoreCaseOrUser_PhoneContainingIgnoreCase(String name, String phone);
+    //
+    List<TicketSupport> findByUserIdIn(List<Long> userIds);
 }
