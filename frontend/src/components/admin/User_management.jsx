@@ -30,9 +30,13 @@ export default function UserManagement() {
         fetchUsers();
     };
 
-    const filteredUsers = users.filter(
-        (u) => u.name?.toLowerCase().includes(search.toLowerCase()) || u.phoneNumber.includes(search)
-    );
+    const filteredUsers = users
+        .filter((u) => u.accountType === "USER") //
+        .filter(
+            (u) =>
+                u.name?.toLowerCase().includes(search.toLowerCase()) ||
+                u.phoneNumber.includes(search)
+        );
 
     const handleContextMenu = (e, user) => {
         e.preventDefault();
