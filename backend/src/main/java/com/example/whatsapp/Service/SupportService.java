@@ -1,83 +1,60 @@
 package com.example.whatsapp.Service;
 
-import com.example.whatsapp.DTO.TicketResponseDTO;
 import com.example.whatsapp.DTO.TicketSupportDTO;
 import com.example.whatsapp.Entity.TicketSupport;
-import com.example.whatsapp.Entity.TicketResponse;
+import com.example.whatsapp.Entity.User;
 import com.example.whatsapp.Repository.SupportTicketRepository;
-import com.example.whatsapp.Repository.SupportResponseRepository;
+import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SupportService {
 
-    private final SupportResponseRepository supportResponseRepository;
     private final SupportTicketRepository supportTicketRepository;
+    private final UserRepository userRepository;
 
-    //Get all tickets
-    public List<TicketSupport> getAllTickets() {
-        return supportTicketRepository.findAll();
+    // Load all tickets
+    public List<TicketSupportDTO> getAllTickets() {
+        return supportTicketRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    //Get tickets by user
-    public List<TicketSupport> getTicketsByUserId(Long userId) {
-        return supportTicketRepository.findByUserId(userId);
+    // Search by username or phone number
+    public List<TicketSupportDTO> searchTicketsByUsernameOrPhone(String query) {
+        List<User> matchedUsers = userRepository.findByNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(query, query);
+
+        List<Long> userIds = matchedUsers.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        List<TicketSupport> tickets = supportTicketRepository.findByUserIdIn(userIds);
+
+        return tickets.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    //Create new support ticket
-    public TicketSupport createTicket(TicketSupport ticketSupport) {
-        ticketSupport.setCreatedAt(LocalDateTime.now());
-        ticketSupport.setUpdatedAt(LocalDateTime.now());
-        if (ticketSupport.getStatus() == null) {
-            ticketSupport.setStatus("open");
-        }
-        return supportTicketRepository.save(ticketSupport);
+    //Load by userId
+    public List<TicketSupportDTO> getTicketsByUserId(Long userId) {
+        List<TicketSupport> tickets = supportTicketRepository.findByUserId(userId);
+        return tickets.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    /*/Update ticket
-    public Optional<Message> updateTicket(Long id, MessageDTO dto) {
-        return supportRepository.findTicketById(id).map(ticket -> {
-            ticket.setSubject(dto.getSubject());
-            ticket.setMessage(dto.getMessage());
-            ticket.setStatus(dto.getStatus());
-            ticket.setUpdatedAt(LocalDateTime.now());
-            return supportRepository.saveTicket(ticket);
-        });
+    private TicketSupportDTO toDTO(TicketSupport ticket) {
+        return TicketSupportDTO.builder()
+                .id(ticket.getId())
+                .userId(ticket.getUserId())
+                .subject(ticket.getSubject())
+                .message(ticket.getMessage())
+                .status(ticket.getStatus())
+                .createdAt(ticket.getCreatedAt())
+                .updatedAt(ticket.getUpdatedAt())
+                .build();
     }
-
-
-    //Get single ticket with responses
-    public Optional<Message> getTicketById(Long id) {
-        return supportRepository.findTicketById(id);
-    }
-
-    //reponse ticket
-
-    //Add response and update ticket.updatedAt
-    public TicketResponse createResponse(TicketResponse response) {
-        response.setCreatedAt(LocalDateTime.now());
-        TicketResponse savedResponse = supportRepository.saveResponse(response);
-
-        // Update ticket.updatedAt
-        Message ticket = response.getTicket();
-        if (ticket != null) {
-            ticket.setUpdatedAt(LocalDateTime.now());
-            supportRepository.saveTicket(ticket);
-        }
-
-        return savedResponse;
-    }
-
-    //Get all responses by ticket ID
-    public List<TicketResponse> getResponsesByTicketId(Long ticketId) {
-        return supportRepository.findResponsesByTicketId(ticketId);
-    }*/
-
-
 }
