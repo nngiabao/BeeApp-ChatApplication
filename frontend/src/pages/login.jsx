@@ -30,7 +30,8 @@ export default function Login() {
 
             setMessage(res.data.message);
             // navigate to home without needing to pass state
-            navigate("/home");
+            if(userData.accountType === "ADMIN") navigate("/admin", { state: userData });
+            else navigate("/home");
         } catch (err) {
             console.error("Error logging in:", err);
             if (err.response?.status === 400) {

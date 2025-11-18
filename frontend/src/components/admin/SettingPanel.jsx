@@ -1,93 +1,152 @@
 import React, { useEffect, useState } from "react";
+import { useUser } from "../../components/context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export default function SettingsPanel() {
-    const [admin, setAdmin] = useState(null);
+    const { user, updateUser, changePassword, setUser } = useUser();
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         name: "",
         phoneNumber: "",
         statusMessage: "",
-        profilePicture: "",
     });
 
-    const adminId = 1; // ← replace with actual admin ID or fetch from auth context
+    const [previewPicture, setPreviewPicture] = useState("");
+    const [errors, setErrors] = useState({});
+
+    // Password fields
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
 
     useEffect(() => {
-        fetch(`http://localhost:8080/users/${adminId}`)
-            .then(res => res.json())
-            .then(data => {
-                setAdmin(data.data);
-                setFormData({
-                    name: data.data.name || "",
-                    phoneNumber: data.data.phoneNumber || "",
-                    statusMessage: data.data.statusMessage || "",
-                    profilePicture: data.data.profilePicture || "",
-                });
-            })
-            .catch(console.error);
-    }, []);
+        if (user) {
+            setFormData({
+                name: user.name || "",
+                phoneNumber: user.phoneNumber || "",
+                statusMessage: user.statusMessage || "",
+            });
+            setPreviewPicture(user.profilePicture || "");
+        }
+    }, [user]);
+
+    // --- VALIDATION ---
+    const validatePhone = (phone) => {
+        const regex = /^[0-9]{10}$/;
+        return regex.test(phone);
+    };
 
     const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    };
+        const { name, value } = e.target;
 
-    const handleSave = async () => {
-        const res = await fetch(`http://localhost:8080/users/${adminId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-        });
+        setFormData(prev => ({ ...prev, [name]: value }));
 
-        if (res.ok) {
-            alert("Profile updated!");
-        } else {
-            alert("Failed to update profile.");
+        if (name === "phoneNumber") {
+            if (!validatePhone(value)) {
+                setErrors(prev => ({ ...prev, phone: "Phone must be 10 digits" }));
+            } else {
+                setErrors(prev => ({ ...prev, phone: null }));
+            }
         }
     };
 
-    const handleProfilePictureUpdate = async () => {
-        const res = await fetch(`http://localhost:8080/users/${adminId}/profile-picture`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imgUrl: formData.profilePicture }),
-        });
+    const handleSave = () => {
+        if (errors.phone) {
+            alert("Fix validation errors first.");
+            return;
+        }
+        updateUser(formData);
+    };
 
-        if (res.ok) {
-            alert("Profile picture updated!");
-        } else {
-            alert("Failed to update picture.");
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch(`http://localhost:8080/users/${user.id}/profile-picture/upload`, {
+                method: "PUT",
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.imgUrl) {
+                alert("✅ Profile picture uploaded!");
+                setFormData((prev) => ({ ...prev, profilePicture: data.imgUrl }));
+                setUser({ ...user, profilePicture: data.imgUrl });
+            } else {
+                alert("❌ Upload failed");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Server error during upload");
         }
     };
 
-    if (!admin) return <div>Loading admin data...</div>;
+    const handleChangePassword = async () => {
+        if (!oldPassword || !newPassword) {
+            alert("Both fields are required.");
+            return;
+        }
+        if (newPassword.length < 4) {
+            alert("Password must be at least 4 characters.");
+            return;
+        }
+
+        await changePassword(oldPassword, newPassword);
+
+        setOldPassword("");
+        setNewPassword("");
+    };
+
+    const handleLogout = async () => {
+        try {
+            await fetch("http://localhost:8080/users/logout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: user.username }),
+            });
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
+
+        localStorage.clear();
+        setUser(null);
+        navigate("/");
+    };
+
+    if (!user) return <div>Loading admin data...</div>;
 
     return (
         <div>
             <h2 className="text-3xl font-bold mb-6">Admin Settings</h2>
 
-            <div className="bg-white shadow rounded-2xl p-6 space-y-4 max-w-lg">
+            <div className="bg-white shadow rounded-2xl p-6 space-y-6 max-w-lg mx-auto">
+
                 {/* Profile Picture */}
-                <div className="flex items-center gap-4">
-                    <img
-                        src={formData.profilePicture || "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"}
-                        alt="Profile"
-                        className="w-20 h-20 rounded-full object-cover border"
-                    />
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium">Profile Picture URL</label>
-                        <input
-                            type="text"
-                            name="profilePicture"
-                            value={formData.profilePicture}
-                            onChange={handleChange}
-                            className="mt-1 border rounded px-3 py-1 w-full"
+                <div className="relative mb-6 flex flex-col items-center">
+                    <label htmlFor="profile-upload" className="cursor-pointer group">
+                        <img
+                            src={
+                                formData.profilePicture ||
+                                "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"
+                            }
+                            alt="Profile"
+                            className="w-40 h-40 rounded-full object-cover border-4 border-gray-300 shadow transition-transform duration-300 hover:scale-105"
                         />
-                        <button
-                            onClick={handleProfilePictureUpdate}
-                            className="mt-2 text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                        >
-                            Update Picture
-                        </button>
-                    </div>
+                        <input
+                            type="file"
+                            id="profile-upload"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                        />
+                        <p className="text-sm text-gray-500 mt-2 group-hover:underline">Click to change profile
+                            picture</p>
+                    </label>
                 </div>
 
                 {/* Name */}
@@ -102,7 +161,7 @@ export default function SettingsPanel() {
                     />
                 </div>
 
-                {/* Phone Number */}
+                {/* Phone */}
                 <div>
                     <label className="block text-sm font-medium">Phone Number</label>
                     <input
@@ -110,11 +169,15 @@ export default function SettingsPanel() {
                         name="phoneNumber"
                         value={formData.phoneNumber}
                         onChange={handleChange}
-                        className="mt-1 border rounded px-3 py-1 w-full"
+                        className={`mt-1 border rounded px-3 py-1 w-full 
+                            ${errors.phone ? "border-red-500" : ""}`}
                     />
+                    {errors.phone && (
+                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                    )}
                 </div>
 
-                {/* Status Message */}
+                {/* Status */}
                 <div>
                     <label className="block text-sm font-medium">Status Message</label>
                     <textarea
@@ -126,14 +189,49 @@ export default function SettingsPanel() {
                 </div>
 
                 {/* Save */}
-                <div className="text-right">
+                <button
+                    onClick={handleSave}
+                    className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                    Save Profile
+                </button>
+
+                {/* Change Password */}
+                <div className="pt-4 border-t">
+                    <h3 className="text-lg font-semibold mb-3">Change Password</h3>
+
+                    <input
+                        type="password"
+                        placeholder="Old Password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="border rounded px-3 py-2 w-full mb-3"
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="New Password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="border rounded px-3 py-2 w-full mb-3"
+                    />
+
                     <button
-                        onClick={handleSave}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                        onClick={handleChangePassword}
+                        className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
-                        Save Changes
+                        Update Password
                     </button>
                 </div>
+
+                {/* Logout */}
+                <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-6"
+                >
+                    Logout
+                </button>
+
             </div>
         </div>
     );
