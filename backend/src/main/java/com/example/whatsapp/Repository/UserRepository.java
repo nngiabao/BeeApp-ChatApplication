@@ -14,6 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //List<User> findTop5ByOrderByCreatedAtDesc();
     //count online users
     long countByIsOnlineTrue();
-    List<User> findByNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(String name, String phone);
+    List<User> findByNameContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(String name, String phoneNumber);
+
 
 }
