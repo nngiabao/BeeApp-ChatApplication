@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/admin/Sidebar.jsx";
 import Users from "../../components/admin/User_management.jsx";
+import Tickets from "../../components/admin/Ticket_management.jsx";
+import Analytics from "../../components/admin/Analytics.jsx";
 
 // Dummy content components
 const DashboardOverview = () => (
@@ -21,13 +23,6 @@ const UserManagement = () => (
     </div>
 );
 
-const Analytics = () => (
-    <div>
-        <h2 className="text-3xl font-bold mb-6">Analytics</h2>
-        <div className="bg-white shadow rounded-2xl p-6">Analytics charts and stats go here.</div>
-    </div>
-);
-
 const SettingsPage = () => (
     <div>
         <h2 className="text-3xl font-bold mb-6">Settings</h2>
@@ -42,6 +37,7 @@ export default function AdminDashboardLayout() {
         switch (activePage) {
             case "dashboard": return <DashboardOverview />;
             case "users": return <Users />;
+            case "tickets": return <Tickets />;
             case "analytics": return <Analytics />;
             case "settings": return <SettingsPage />;
             default: return <DashboardOverview />;
