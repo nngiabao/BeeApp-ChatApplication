@@ -11,5 +11,7 @@ public class TicketResponseDTO {
     private Long ticketId;
     private Long managerId;
     private String response;
+    private String senderType;
     private LocalDateTime createdAt;
+
 }

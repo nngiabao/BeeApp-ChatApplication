@@ -13,7 +13,5 @@ public interface SupportTicketRepository extends JpaRepository<TicketSupport, Lo
     //
     Long countByStatus(String status);
     //
-    List<TicketSupport> findByUser_NameContainingIgnoreCaseOrUser_PhoneContainingIgnoreCase(String name, String phone);
-    //
     List<TicketSupport> findByUserIdIn(List<Long> userIds);
 }
