@@ -27,10 +27,10 @@ public class ChatController {
     //WebSocket message sending
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload MessageDTO messageDTO) {
-        System.out.println("💬 Received message from user " + messageDTO.getSenderId() +
+        System.out.println("Received message from user " + messageDTO.getSenderId() +
                 " in chat " + messageDTO.getChatId() + ": " + messageDTO.getContent());
 
-        // ✅ Save to DB
+        //Save to DB
         Message message = Message.builder()
                 .chatId(messageDTO.getChatId())
                 .senderId(messageDTO.getSenderId())
@@ -44,7 +44,7 @@ public class ChatController {
 
         Message savedMessage = messageService.sendMessage(message);
 
-        // ✅ Broadcast the *saved* message
+        //Broadcast the *saved* message
         MessageDTO broadcast = MessageDTO.builder()
                 .id(savedMessage.getId())
                 .chatId(savedMessage.getChatId())

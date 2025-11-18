@@ -150,9 +150,18 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody String username ) {
-        // You could invalidate a session or token here later
-        userService.setUserOnline(username,false);
-        return ResponseEntity.ok("Logout successful");
+    public ResponseEntity<ApiResponse<String>> logout(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Username is required", null));
+        }
+
+        Optional<User> optionalUser = userService.getUserByUsername(username);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body(new ApiResponse<>("User not found", null));
+        }
+
+        userService.setUserOnline(username, false);
+        return ResponseEntity.ok(new ApiResponse<>("Logout successful", username));
     }
 }
