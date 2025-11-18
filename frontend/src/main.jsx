@@ -5,15 +5,21 @@ import App from './App.jsx'
 import {UserProvider} from "./components/context/UserContext";
 import {ContactListProvider} from "./components/context/ContactContext.jsx";
 import {ChatProvider} from "./components/context/ChatContext";
+import {BrowserRouter} from "react-router-dom";
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-        <UserProvider>
-            <ChatProvider>
-                <ContactListProvider>
-                    <App/>
-                </ContactListProvider>
-            </ChatProvider>
-        </UserProvider>
+
+        <BrowserRouter>
+            <UserProvider>
+                <ChatProvider>
+                    <ContactListProvider>
+                        <App/>
+                    </ContactListProvider>
+                </ChatProvider>
+            </UserProvider>
+        </BrowserRouter>
+
+
     </StrictMode>
 )

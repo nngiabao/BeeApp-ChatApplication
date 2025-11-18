@@ -22,7 +22,8 @@ export default function ProfileInfo() {
         try {
             await fetch("http://localhost:8080/users/logout", {
                 method: "POST",
-                userName: user.username,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: user.username }),
             });
         } catch (err) {
             console.error("Logout request failed:", err);
