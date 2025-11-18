@@ -3,6 +3,7 @@ import Sidebar from "../../components/admin/Sidebar.jsx";
 import Users from "../../components/admin/User_management.jsx";
 import Tickets from "../../components/admin/Ticket_management.jsx";
 import Analytics from "../../components/admin/Analytics.jsx";
+import Setting from "../../components/admin/SettingPanel.jsx";
 
 // Dummy content components
 const DashboardOverview = () => (
@@ -16,19 +17,6 @@ const DashboardOverview = () => (
     </div>
 );
 
-const UserManagement = () => (
-    <div>
-        <h2 className="text-3xl font-bold mb-6">User Management</h2>
-        <div className="bg-white shadow rounded-2xl p-6">User list will be displayed here.</div>
-    </div>
-);
-
-const SettingsPage = () => (
-    <div>
-        <h2 className="text-3xl font-bold mb-6">Settings</h2>
-        <div className="bg-white shadow rounded-2xl p-6">Settings content will be shown here.</div>
-    </div>
-);
 
 export default function AdminDashboardLayout() {
     const [activePage, setActivePage] = useState("dashboard");
@@ -39,7 +27,7 @@ export default function AdminDashboardLayout() {
             case "users": return <Users />;
             case "tickets": return <Tickets />;
             case "analytics": return <Analytics />;
-            case "settings": return <SettingsPage />;
+            case "settings": return <Setting />;
             default: return <DashboardOverview />;
         }
     };
