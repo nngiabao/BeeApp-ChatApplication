@@ -8,6 +8,7 @@ import com.example.whatsapp.Service.SupportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.*;
 
 import java.util.List;
 
@@ -48,13 +49,32 @@ public class SupportController {
     public TicketResponseDTO replyToTicket(
             @PathVariable Long ticketId,
             @RequestParam Long managerId,
+            @RequestParam String senderType,
             @RequestParam String message
     ) {
-        return supportService.replyToTicket(ticketId, managerId, message);
+        return supportService.replyToTicket(ticketId, senderType,managerId, message);
     }
     //
     @PutMapping("/{ticketId}/resolve")
     public TicketSupport resolveTicket(@PathVariable Long ticketId) {
         return supportService.markTicketResolved(ticketId);
+    }
+    //create ticket
+    @PostMapping
+    public ResponseEntity<ApiResponse<TicketSupport>> createTicket(@RequestBody Map<String, String> payload) {
+        try {
+            Long userId = Long.parseLong(payload.get("userId"));
+            String subject = payload.get("subject");
+            String message = payload.get("message");
+
+            if (subject == null || subject.isBlank() || message == null || message.isBlank()) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>("Subject and message cannot be empty", null));
+            }
+
+            TicketSupport ticket = supportService.createTicket(userId, subject, message);
+            return ResponseEntity.ok(new ApiResponse<>("Ticket submitted successfully", ticket));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Invalid input", null));
+        }
     }
 }

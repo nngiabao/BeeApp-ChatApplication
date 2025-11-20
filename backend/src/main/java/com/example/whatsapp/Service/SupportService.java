@@ -76,13 +76,13 @@ public class SupportService {
                 .collect(Collectors.toList());
     }
 
-    public TicketResponseDTO replyToTicket(Long ticketId, Long managerId, String message) {
+    public TicketResponseDTO replyToTicket(Long ticketId, String senderType,Long managerId, String message) {
 
         TicketResponse response = TicketResponse.builder()
                 .ticketId(ticketId)
                 .managerId(managerId)
                 .response(message)
-                .senderType("ADMIN")
+                .senderType(senderType)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -105,5 +105,21 @@ public class SupportService {
         ticket.setStatus("RESOLVED");
         ticket.setUpdatedAt(LocalDateTime.now());
         return supportTicketRepository.save(ticket);
+    }
+    //create ticket
+    public TicketSupport createTicket(Long userId, String subject, String message) {
+        TicketSupport ticket = TicketSupport.builder()
+                .userId(userId)
+                .subject(subject)
+                .message(message)
+                .status("OPEN")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        return supportTicketRepository.save(ticket);
+    }
+
+    public List<TicketSupport> getTicketsByUser(Long userId) {
+        return supportTicketRepository.findByUserId(userId);
     }
 }
