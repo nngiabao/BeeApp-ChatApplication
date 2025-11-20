@@ -129,5 +129,8 @@ public class ChatService {
                 .createdBy(saved.getCreatedBy())
                 .build();
     }
-
+    //Count total Chats
+    public Long countTotalChats(){
+        return chatRepository.count();
+    }
 }
