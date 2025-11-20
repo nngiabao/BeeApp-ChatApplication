@@ -56,14 +56,32 @@ export default function UserManagement() {
     };
 
     const handleUpdateUser = async () => {
-        await fetch(`http://localhost:8080/users/${selectedUser.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(editForm),
-        });
-        setSelectedUser(null);
-        fetchUsers();
+        try {
+            const res = await fetch(`http://localhost:8080/users/${selectedUser.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+            });
+
+            const data = await res.json(); // backend returns ApiResponse
+
+            if (!res.ok) {
+                //backend returned error
+                alert(data.message || "Update failed");
+                return;
+            }
+
+            // success
+            alert("User updated successfully!");
+            setSelectedUser(null);
+            fetchUsers();
+
+        } catch (err) {
+            console.error("Update error:", err);
+            alert("Server error while updating user");
+        }
     };
+
 
     return (
         <div>

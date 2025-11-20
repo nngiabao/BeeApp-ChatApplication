@@ -33,7 +33,7 @@ export default function TicketManagement() {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/supports/${selectedTicket.id}/reply?managerId=1&message=${encodeURIComponent(newResponse)}`,
+                `http://localhost:8080/supports/${selectedTicket.id}/reply?managerId=1&senderType=MANAGER&message=${encodeURIComponent(newResponse)}`,
                 {
                     method: "POST",
                 }
