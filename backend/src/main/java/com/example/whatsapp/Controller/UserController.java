@@ -34,10 +34,10 @@ public class UserController {
                 .phoneNumber(userDTO.getPhoneNumber())
                 .password(userDTO.getPassword())   // must map here
                 .name(userDTO.getName())
-                .statusMessage(userDTO.getStatusMessage())
+                .statusMessage("I love BeeApp")
                 .profilePicture(userDTO.getProfilePicture())
-                .isOnline(userDTO.getIsOnline())
-                .accountType(userDTO.getAccountType())
+                .isOnline(false)
+                .accountType("USER")
                 .build();
 
         User savedUser = userService.createUser(user);
