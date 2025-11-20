@@ -15,7 +15,7 @@ export default function MessageInput() {
     const { sendMessage, currentChat } = useChat();
     const { user } = useUser();
 
-    // 🧩 Send text message
+    //Send text message
     const handleSend = (e) => {
         e.preventDefault();
         if (!input.trim() || !currentChat) return;
@@ -30,10 +30,10 @@ export default function MessageInput() {
         setShowEmoji(false);
     };
 
-    // 🧩 Handle emoji click
+    //Handle emoji click
     const handleEmojiClick = (emoji) => setInput((prev) => prev + emoji);
 
-    // 🧩 Handle file selection and upload to AWS
+    // Handle file selection and upload to AWS
     const handleFileSelect = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
