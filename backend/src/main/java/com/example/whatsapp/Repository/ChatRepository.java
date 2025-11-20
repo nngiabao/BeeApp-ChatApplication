@@ -31,4 +31,6 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 """)
     List<Chat> findAllChatsInvolvingUser(@Param("userId") Long userId);
 
+
+
 }
