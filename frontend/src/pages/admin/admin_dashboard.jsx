@@ -1,58 +1,44 @@
-import React, { useEffect, useState } from "react";
-import mainpage from "../../assets/mainpage.png"; // <-- import your image
+import React, { useState } from "react";
+import Sidebar from "../../components/admin/Sidebar.jsx";
+import Users from "../../components/admin/User_management.jsx";
+import Tickets from "../../components/admin/Ticket_management.jsx";
+import Analytics from "../../components/admin/Analytics.jsx";
+import Setting from "../../components/admin/SettingPanel.jsx";
+import Main from "../../components/admin/DashboardMain.jsx";
 
-export default function DashboardOverview() {
-    const [stats, setStats] = useState({
-        totalUsers: 0,
-        activeUsers: 0,
-        sharedFiles: 0,
-    });
+// Dummy content components
+const DashboardOverview = () => (
+    <div>
+        <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="bg-white shadow rounded-2xl p-6">Total Users: 1200</div>
+            <div className="bg-white shadow rounded-2xl p-6">Active Chats: 856</div>
+            <div className="bg-white shadow rounded-2xl p-6">Files Shared: 340</div>
+        </div>
+    </div>
+);
 
-    useEffect(() => {
-        fetch("http://localhost:8080/admin/overview")
-            .then(res => res.json())
-            .then(data => {
-                setStats({
-                    totalUsers: data.totalUsers || 0,
-                    activeUsers: data.activeUsers || 0,
-                    sharedFiles: data.sharedFiles || 0,
-                });
-            })
-            .catch(console.error);
-    }, []);
+
+export default function AdminDashboardLayout() {
+    const [activePage, setActivePage] = useState("dashboard");
+
+    const renderPage = () => {
+        switch (activePage) {
+            case "dashboard": return <Main />;
+            case "users": return <Users />;
+            case "tickets": return <Tickets />;
+            case "analytics": return <Analytics />;
+            case "settings": return <Setting />;
+            default: return <DashboardOverview />;
+        }
+    };
 
     return (
-        <div className="flex flex-col h-full w-full">
-
-            {/* Stats Section (Top) */}
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div className="bg-white shadow rounded-2xl p-6">
-                        <h3 className="text-lg font-semibold">Total Users</h3>
-                        <p className="text-3xl">{stats.totalUsers}</p>
-                    </div>
-                    <div className="bg-white shadow rounded-2xl p-6">
-                        <h3 className="text-lg font-semibold">Online Users</h3>
-                        <p className="text-3xl">{stats.activeUsers}</p>
-                    </div>
-                    <div className="bg-white shadow rounded-2xl p-6">
-                        <h3 className="text-lg font-semibold">Files Shared</h3>
-                        <p className="text-3xl">{stats.sharedFiles}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Background Image Section (Bottom, fills rest) */}
-            <div
-                className="flex-1 rounded-2xl overflow-hidden shadow-lg bg-cover bg-center"
-                style={{
-                    backgroundImage: `url(${mainpage})`,
-                }}
-            >
-
-            </div>
+        <div className="flex h-screen w-full bg-gray-100">
+            <Sidebar setActivePage={setActivePage} />
+            <main className="flex-1 p-10 overflow-y-auto">
+                {renderPage()}
+            </main>
         </div>
     );
 }
