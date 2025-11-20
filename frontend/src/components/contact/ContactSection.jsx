@@ -1,4 +1,3 @@
-// src/components/contacts/ContactSection.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useContactList } from "../context/ContactContext";
 import { useChat } from "../context/ChatContext";
@@ -14,7 +13,6 @@ export default function ContactSection() {
     const [selectedContact, setSelectedContact] = useState(null);
     const menuRef = useRef();
 
-    // 🧩 Close context menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -30,22 +28,33 @@ export default function ContactSection() {
 
     const visibleContacts = contacts.filter((contact) => !contact.blocked);
 
-    // 🧩 Right-click context menu
     const handleContextMenu = (e, contact) => {
         e.preventDefault();
         setSelectedContact(contact);
         setMenuPos({ x: e.clientX, y: e.clientY });
     };
 
-    const handleAction = (action) => {
+    const handleAction = async (action) => {
         console.log(`👉 ${action} on contact:`, selectedContact);
         setMenuPos(null);
+
+        if (action === "remove") {
+            try {
+                const res = await fetch(
+                    `http://localhost:8080/contacts/user/${user.id}/contact/${selectedContact.contactId}`,
+                    { method: "DELETE" }
+                );
+                if (!res.ok) throw new Error("Failed to delete contact");
+                window.location.reload();
+            } catch (err) {
+                console.error("❌ Failed to delete contact:", err);
+                alert("Failed to delete contact.");
+            }
+        }
     };
 
-    // 🧠 Open or create private chat
     const handleOpenChat = async (contact) => {
         try {
-            // 1️⃣ Check if chat already exists locally
             const existingChat = chatList.find(
                 (chat) =>
                     chat.type === "PRIVATE" &&
@@ -55,13 +64,12 @@ export default function ContactSection() {
             if (existingChat) {
                 const finalChat = {
                     ...existingChat,
-                    imgUrl: contact.profilePicture,  // pass img url
+                    imgUrl: contact.profilePicture,
                 };
                 selectChat(finalChat);
                 return;
             }
 
-            // 2️⃣ Otherwise create a new chat
             const body = {
                 title: contact.alias || contact.contactName,
                 createdBy: user.id,
@@ -79,7 +87,7 @@ export default function ContactSection() {
             const chat = await res.json();
             const finalChat = {
                 ...chat,
-                imgUrl: contact.profilePicture,   //
+                imgUrl: contact.profilePicture,
                 alias: contact.alias,
                 contactId: contact.contactId,
             };
@@ -102,11 +110,10 @@ export default function ContactSection() {
                     visibleContacts.map((contact) => (
                         <div
                             key={contact.id}
-                            onClick={() => handleOpenChat(contact)} // 👈 Left click opens chat
+                            onClick={() => handleOpenChat(contact)}
                             onContextMenu={(e) => handleContextMenu(e, contact)}
                             className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition"
                         >
-                            {/* Avatar */}
                             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center overflow-hidden text-white">
                                 {contact.profilePicture ? (
                                     <img
@@ -123,7 +130,6 @@ export default function ContactSection() {
                                 )}
                             </div>
 
-                            {/* Info */}
                             <div>
                                 <p className="font-medium text-gray-900">
                                     {contact.alias || "Unnamed Contact"}
@@ -137,7 +143,6 @@ export default function ContactSection() {
                 )}
             </div>
 
-            {/* Context Menu */}
             {menuPos && (
                 <div
                     ref={menuRef}

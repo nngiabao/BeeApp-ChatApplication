@@ -78,13 +78,13 @@ public class ContactController {
         return ResponseEntity.notFound().build();
     }
 
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
-        if (contactService.deleteContact(id))
-            return ResponseEntity.noContent().build();
-        return ResponseEntity.notFound().build();
+    //delete contact
+    @DeleteMapping("/user/{userId}/contact/{contactId}")
+    public ResponseEntity<ApiResponse<String>> deleteContact(
+            @PathVariable Long userId,
+            @PathVariable Long contactId
+    ) {
+        contactService.deleteMutualContact(userId, contactId);
+        return ResponseEntity.ok(new ApiResponse<>("Both contact rows deleted", null));
     }
-
-
 }

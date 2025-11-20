@@ -84,12 +84,12 @@ public class ContactService {
     }
 
     //Delete contact
-    public boolean deleteContact(Long id) {
-        if (contactRepository.existsById(id)) {
-            contactRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public void deleteMutualContact(Long userId, Long contactId) {
+        contactRepository.findByUserIdAndContactId(userId, contactId)
+                .ifPresent(contactRepository::delete);
+
+        contactRepository.findByUserIdAndContactId(contactId, userId)
+                .ifPresent(contactRepository::delete);
     }
 
     //Block contact
