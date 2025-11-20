@@ -5,7 +5,7 @@ import axios from "axios";
 export default function Signup() {
     const [form, setForm] = useState({
         username: "",
-        email: "",
+        name: "",
         password: "",
         phoneNumber: "",
     });
@@ -18,15 +18,22 @@ export default function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // ✅ Phone number must be exactly 10 digits
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(form.phoneNumber)) {
+            setMessage("Phone number must be exactly 10 digits.");
+            return;
+        }
+
         try {
             const res = await axios.post("http://localhost:8080/users", {
                 username: form.username,
-                email: form.email,
+                name: form.name,
                 password: form.password,
                 phoneNumber: form.phoneNumber,
             });
 
-            setMessage("✅ User registered successfully!");
+            setMessage("User registered successfully!");
             console.log("Response:", res.data);
         } catch (err) {
             console.error("Error registering user:", err);
@@ -43,16 +50,16 @@ export default function Signup() {
                     <input
                         name="username"
                         type="text"
-                        placeholder="Full Name"
+                        placeholder="Username"
                         value={form.username}
                         onChange={handleChange}
                         className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
                     />
                     <input
-                        name="email"
-                        type="email"
-                        placeholder="Email"
-                        value={form.email}
+                        name="name"
+                        type="text"
+                        placeholder="Full Name"
+                        value={form.name}
                         onChange={handleChange}
                         className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
                     />
