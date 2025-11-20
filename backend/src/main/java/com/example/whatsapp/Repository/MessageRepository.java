@@ -20,4 +20,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     //Get latest message (for sidebar preview)
     Optional<Message> findTopByChatIdOrderBySentAtDesc(Long chatId);
+
+    Long countMessageByMessageType(String messageType);
 }

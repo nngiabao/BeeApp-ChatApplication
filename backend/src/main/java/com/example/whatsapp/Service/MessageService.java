@@ -73,4 +73,8 @@ public class MessageService {
                         .build())
                 .orElse(null);
     }
+
+    public Long countSharedFiles(){
+        return  messageRepository.countMessageByMessageType("file");
+    }
 }
