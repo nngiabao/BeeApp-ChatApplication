@@ -1,11 +1,23 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 // Create the context
 const UserContext = createContext();
 
 // Provider component
 export function UserProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const stored = localStorage.getItem("user");
+        return stored ? JSON.parse(stored) : null;
+    });
+
+    // Save to localStorage on user change
+    useEffect(() => {
+        if (user) {
+            localStorage.setItem("user", JSON.stringify(user));
+        } else {
+            localStorage.removeItem("user");
+        }
+    }, [user]);
 
     //Update user info (name, phone, etc.)
     const updateUser = async (updatedFields) => {
@@ -22,7 +34,6 @@ export function UserProvider({ children }) {
                 isOnline: user.isOnline,
                 accountType: user.accountType,
             };
-            //
             const res = await fetch(`http://localhost:8080/users/${user.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
