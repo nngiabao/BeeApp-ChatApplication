@@ -2,13 +2,24 @@ import React from "react";
 import { Download } from "lucide-react";
 
 export default function MessageBubble({ message }) {
-    const handleDownload = () => {
-        const link = document.createElement("a");
-        link.href = message.mediaUrl;
-        link.download = message.content;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+
+    const handleDownload = async () => {
+        try {
+            const response = await fetch(message.mediaUrl, { mode: "cors" });
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = message.content || "file";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Download failed:", error);
+        }
     };
 
     return (
@@ -18,10 +29,9 @@ export default function MessageBubble({ message }) {
                     message.self ? "bg-green-100 text-gray-800" : "bg-white text-gray-800"
                 }`}
             >
-                {/* 📄 File Message */}
                 {message.messageType?.toLowerCase() === "file" ? (
                     <div className="flex flex-row items-center gap-2">
-                        {/* File name */}
+
                         <a
                             href={message.mediaUrl}
                             target="_blank"
@@ -31,7 +41,6 @@ export default function MessageBubble({ message }) {
                             {message.content}
                         </a>
 
-                        {/* Download icon */}
                         <button
                             onClick={handleDownload}
                             className="text-green-600 hover:text-green-800 p-1"
@@ -40,7 +49,6 @@ export default function MessageBubble({ message }) {
                         </button>
                     </div>
                 ) : (
-                    //Text Message
                     <p>{message.content}</p>
                 )}
             </div>

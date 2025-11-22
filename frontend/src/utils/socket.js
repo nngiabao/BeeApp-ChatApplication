@@ -1,12 +1,16 @@
+// src/utils/socket.js
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 let stompClient = null;
 let connected = false;
-let activeSubscriptions = {}; // track chat subscriptions
+let activeSubscriptions = {};
+let connectCallbackQueue = [];   // <-- Callbacks waiting for connection
 
-// 🧩 Connect WebSocket (only once)
-export const connectWebSocket = (onConnected) => {
+export const isConnected = () => connected;
+
+// 🔌 Connect WebSocket (connect only once)
+export const connectWebSocket = () => {
     if (stompClient && connected) {
         console.log("⚡ WebSocket already connected");
         return;
@@ -15,69 +19,71 @@ export const connectWebSocket = (onConnected) => {
     const socket = new SockJS("http://localhost:8080/ws");
     stompClient = Stomp.over(socket);
 
-    // Optional: silence debug logs
+    // Remove verbose logs
     stompClient.debug = () => {};
 
     stompClient.connect(
         {},
         () => {
             connected = true;
-            console.log("✅ Connected to WebSocket server");
-            if (onConnected) onConnected();
+            console.log("✅ WebSocket connected");
+
+            // Run all callbacks waiting for connection
+            connectCallbackQueue.forEach((cb) => cb());
+            connectCallbackQueue = [];
         },
         (error) => {
             connected = false;
             console.error("❌ WebSocket connection failed:", error);
+
             setTimeout(() => {
                 console.log("🔄 Reconnecting WebSocket...");
-                connectWebSocket(onConnected);
+                connectWebSocket();
             }, 3000);
         }
     );
 };
 
-// 🧩 Subscribe to a specific chat topic
+// 🚀 Subscribe AFTER WebSocket is ready
 export const subscribeToChat = (chatId, onMessageReceived) => {
-    if (!stompClient || !connected) {
-        console.warn("⚠️ WebSocket not connected yet. Cannot subscribe.");
-        return;
+    const subscribeFn = () => {
+        if (activeSubscriptions[chatId]) return;
+
+        const topic = `/topic/chat/${chatId}`;
+        console.log(`📡 Subscribing to ${topic}`);
+
+        activeSubscriptions[chatId] = stompClient.subscribe(topic, (msg) => {
+            try {
+                const payload = JSON.parse(msg.body);
+                onMessageReceived(payload);
+            } catch (err) {
+                console.error("❌ Failed to parse WS message:", err);
+            }
+        });
+    };
+
+    if (connected) {
+        subscribeFn();
+    } else {
+        console.log(`⏳ Waiting for WebSocket before subscribing to chat ${chatId}`);
+        connectCallbackQueue.push(subscribeFn);
     }
-
-    const topic = `/topic/chat/${chatId}`;
-
-    // Avoid duplicate subscriptions
-    if (activeSubscriptions[chatId]) {
-        console.log(`⚠️ Already subscribed to ${topic}`);
-        return;
-    }
-
-    console.log(`📡 Subscribing to ${topic}`);
-    const subscription = stompClient.subscribe(topic, (message) => {
-        try {
-            const payload = JSON.parse(message.body);
-            onMessageReceived(payload);
-        } catch (error) {
-            console.error("❌ Error parsing message:", error);
-        }
-    });
-
-    activeSubscriptions[chatId] = subscription;
 };
 
-// 🧩 Unsubscribe when leaving a chat
+// 🚫 Unsubscribe from chat
 export const unsubscribeFromChat = (chatId) => {
-    const subscription = activeSubscriptions[chatId];
-    if (subscription) {
-        subscription.unsubscribe();
+    const sub = activeSubscriptions[chatId];
+    if (sub) {
+        sub.unsubscribe();
         delete activeSubscriptions[chatId];
         console.log(`🚫 Unsubscribed from /topic/chat/${chatId}`);
     }
 };
 
-// 🧩 Send message to the current chat
+// ✉️ Send message safely
 export const sendMessage = (chatId, senderId, content, messageType = "text", mediaUrl = null) => {
-    if (!stompClient || !connected) {
-        console.warn("⚠️ Cannot send message — WebSocket not connected.");
+    if (!connected) {
+        console.warn("⚠️ Cannot send message — WebSocket disconnected.");
         return;
     }
 
@@ -87,19 +93,18 @@ export const sendMessage = (chatId, senderId, content, messageType = "text", med
         content,
         messageType,
         mediaUrl,
-        createdAt: new Date().toISOString(),
+        sentAt: new Date().toISOString(),
     };
 
-    console.log("📤 Sending message:", msg);
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
 };
 
-// 🧹 Disconnect WebSocket (optional)
+// 🛑 Optional disconnect
 export const disconnectWebSocket = () => {
-    if (stompClient && connected) {
-        stompClient.disconnect(() => console.log("🛑 Disconnected from WebSocket"));
-        stompClient = null;
-        connected = false;
-        activeSubscriptions = {};
+    if (stompClient) {
+        stompClient.disconnect(() => console.log("🛑 WebSocket disconnected"));
     }
+    stompClient = null;
+    connected = false;
+    activeSubscriptions = {};
 };
