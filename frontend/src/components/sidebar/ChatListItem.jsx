@@ -15,10 +15,16 @@ export default function ChatListItem() {
 
     // ❌ REMOVE loadChatList() — ChatList loads automatically via ChatContext
 
-    // ⬇️ Filter + Sort chats (same as before)
+    //Filter + Sort chats (same as before)
     const sortedChats = useMemo(() => {
-        const filtered = getFilteredChats()
-            .filter((chat) => chat.lastMessage && chat.lastMessage.trim() !== "");
+        const filtered = getFilteredChats().filter((chat) => {
+            if (chat.type === "GROUP") return true; // always show group chats
+            if (chat.type === "PRIVATE") {
+                return chat.lastMessage && chat.lastMessage.trim() !== "";
+            }
+            return false;
+        });
+
         return filtered.sort(
             (a, b) =>
                 new Date(b.lastMessageTime || 0) -

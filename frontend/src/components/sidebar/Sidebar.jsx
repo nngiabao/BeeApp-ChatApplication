@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import SidebarNav from "./SidebarNav";
 import ChatList from "./ChatList";
 import ContactList from "../contact/ContactList";
-import Settings from "../Setting/SettingPanel"; // optional
+import SettingsPanel from "../Setting/SettingPanel";
 
-export default function Sidebar() {
+export default function Sidebar({ setActiveTicket }) {
     const [activeTab, setActiveTab] = useState("chats");
 
     const renderContent = () => {
@@ -14,7 +14,7 @@ export default function Sidebar() {
             case "contacts":
                 return <ContactList />;
             case "settings":
-                return <Settings />;
+                return <SettingsPanel setActiveTicket={setActiveTicket} />;
             default:
                 return <ChatList />;
         }
@@ -22,11 +22,8 @@ export default function Sidebar() {
 
     return (
         <div className="flex h-screen bg-white">
-            {/* Navigation Bar (icons) */}
-            <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab}/>
-
-            {/* Content Panel */}
-            <div className="flex flex-col w-[460px] border-r border-gray-300">
+            <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab} />
+            <div className="flex flex-col w-[350px] border-r border-gray-300">
                 {renderContent()}
             </div>
         </div>
