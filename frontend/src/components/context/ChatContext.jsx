@@ -186,6 +186,20 @@ export function ChatProvider({ children }) {
         socketSendMessage(chatId, user.id, msg.content, msg.messageType, msg.mediaUrl);
     };
     //
+    const loadChatList = async () => {
+        if (!user?.id) return;
+        try {
+            const res = await fetch(`http://localhost:8080/chats/${user.id}`);
+            const data = await res.json();
+
+            if (Array.isArray(data)) {
+                setChatList(data);
+            }
+        } catch (err) {
+            console.error("❌ Failed to reload chat list:", err);
+        }
+    };
+    //
     const addChatToList = (chat) => {
         setChatList(prev => {
             if (prev.some(c => c.id === chat.id)) return prev; // avoid duplicates
@@ -214,6 +228,7 @@ export function ChatProvider({ children }) {
         loadGroupMembers,
         getFilteredChats,
         addChatToList,
+        loadChatList
     };
 
     return (

@@ -13,8 +13,6 @@ export default function ChatListItem() {
 
     const { contacts } = useContactList();
 
-    // ❌ REMOVE loadChatList() — ChatList loads automatically via ChatContext
-
     //Filter + Sort chats (same as before)
     const sortedChats = useMemo(() => {
         const filtered = getFilteredChats().filter((chat) => {
