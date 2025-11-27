@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from "react";
+import { useUser } from "../context/UserContext.jsx";
 
 export default function TicketManagement() {
+    const { user } = useUser(); // FIXED
     const [tickets, setTickets] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [responses, setResponses] = useState([]);
     const [newResponse, setNewResponse] = useState("");
 
-    // 🧩 Load all tickets on mount
+    // Load all tickets
     useEffect(() => {
         fetch("http://localhost:8080/supports")
-            .then(res => res.json())
-            .then(data => setTickets(data.data))
+            .then((res) => res.json())
+            .then((data) => setTickets(data.data))
             .catch(console.error);
     }, []);
 
-    // 🧩 Load responses for ticket
+    // Load responses for a ticket
     const loadResponses = async (ticketId) => {
-        const res = await fetch(`http://localhost:8080/supports/${ticketId}/responses`);
+        const res = await fetch(
+            `http://localhost:8080/supports/${ticketId}/responses`
+        );
         const data = await res.json();
+        console.log("🔥 Responses:", data.data);
         setResponses(data.data);
-        console.log(data.data);
     };
 
     const handleTicketClick = async (ticket) => {
@@ -27,43 +31,43 @@ export default function TicketManagement() {
         await loadResponses(ticket.id);
     };
 
-    // 🧩 Reply to a ticket
+    // Reply (Admin)
     const handleReply = async () => {
         if (!newResponse.trim()) return;
 
         try {
             const res = await fetch(
-                `http://localhost:8080/supports/${selectedTicket.id}/reply?managerId=1&senderType=MANAGER&message=${encodeURIComponent(newResponse)}`,
-                {
-                    method: "POST",
-                }
+                `http://localhost:8080/supports/${selectedTicket.id}/reply?senderId=${user.id}&senderType=ADMIN&message=${encodeURIComponent(
+                    newResponse
+                )}`,
+                { method: "POST" }
             );
 
             if (!res.ok) throw new Error("Failed to send reply");
 
             setNewResponse("");
-            await loadResponses(selectedTicket.id); // reload message thread
+            await loadResponses(selectedTicket.id);
         } catch (error) {
             console.error("❌ Error sending reply:", error);
             alert("Failed to send response. Please try again.");
         }
     };
 
-
-    // 🧩 Mark as resolved
+    // Mark as resolved
     const handleMarkResolved = async () => {
-        await fetch(`http://localhost:8080/supports/${selectedTicket.id}/resolve`, {
-            method: "PUT"
-        });
+        await fetch(
+            `http://localhost:8080/supports/${selectedTicket.id}/resolve`,
+            { method: "PUT" }
+        );
 
-        // Refresh tickets list
+        // Refresh list
         const res = await fetch("http://localhost:8080/supports");
         const data = await res.json();
         setTickets(data.data);
 
-        // Update selected ticket status
-        const updated = data.data.find(t => t.id === selectedTicket.id);
-        setSelectedTicket(updated);
+        setSelectedTicket(
+            data.data.find((t) => t.id === selectedTicket.id)
+        );
     };
 
     return (
@@ -73,12 +77,23 @@ export default function TicketManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Ticket List */}
                 <div className="bg-white shadow rounded-2xl p-6 max-h-[70vh] overflow-y-auto">
-                    <h3 className="text-xl font-semibold mb-4">All Tickets</h3>
-                    {tickets.map(ticket => (
-                        <div key={ticket.id} onClick={() => handleTicketClick(ticket)}
-                             className={`border-b py-2 cursor-pointer hover:bg-gray-100 ${selectedTicket?.id === ticket.id ? "bg-gray-100" : ""}`}>
+                    <h3 className="text-xl font-semibold mb-4">
+                        All Tickets
+                    </h3>
+                    {tickets.map((ticket) => (
+                        <div
+                            key={ticket.id}
+                            onClick={() => handleTicketClick(ticket)}
+                            className={`border-b py-2 cursor-pointer hover:bg-gray-100 ${
+                                selectedTicket?.id === ticket.id
+                                    ? "bg-gray-100"
+                                    : ""
+                            }`}
+                        >
                             <p className="font-medium">{ticket.subject}</p>
-                            <p className="text-sm text-gray-500">Status: {ticket.status}</p>
+                            <p className="text-sm text-gray-500">
+                                Status: {ticket.status}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -87,7 +102,10 @@ export default function TicketManagement() {
                 {selectedTicket && (
                     <div className="bg-white shadow rounded-2xl p-6 max-h-[70vh] flex flex-col overflow-y-auto">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-semibold">{selectedTicket.subject}</h3>
+                            <h3 className="text-xl font-semibold">
+                                {selectedTicket.subject}
+                            </h3>
+
                             {selectedTicket.status !== "RESOLVED" && (
                                 <button
                                     onClick={handleMarkResolved}
@@ -98,8 +116,11 @@ export default function TicketManagement() {
                             )}
                         </div>
 
-                        <p className="mb-4 text-gray-700">{selectedTicket.message}</p>
+                        <p className="mb-4 text-gray-700">
+                            {selectedTicket.message}
+                        </p>
 
+                        {/* Responses */}
                         <div className="flex-1 space-y-2 overflow-y-auto border-t pt-2">
                             {responses.map(res => (
                                 <div
@@ -108,15 +129,24 @@ export default function TicketManagement() {
                                         res.senderType === "ADMIN" ? "bg-blue-50" : "bg-gray-100"
                                     }`}
                                 >
-                                    <p className="text-sm text-gray-600 font-semibold ">
-                                        {res.senderType === "ADMIN" ? `Admin #${res.managerId}` : "User"}:
+                                    <p className="text-sm text-gray-600 font-semibold">
+                                        {res.senderType === "ADMIN"
+                                            ? `Admin #${res.managerId}`
+                                            : "User"}:
                                     </p>
+
+                                    {/* FIXED HERE */}
                                     <p>{res.response}</p>
+
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {new Date(res.createdAt).toLocaleString()}
+                                    </p>
                                 </div>
                             ))}
                         </div>
 
 
+                        {/* Reply Bar */}
                         {selectedTicket.status !== "RESOLVED" ? (
                             <div className="mt-4 flex gap-2">
                                 <input
@@ -124,7 +154,9 @@ export default function TicketManagement() {
                                     placeholder="Type a reply..."
                                     className="flex-1 border rounded p-2"
                                     value={newResponse}
-                                    onChange={e => setNewResponse(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewResponse(e.target.value)
+                                    }
                                 />
                                 <button
                                     onClick={handleReply}
@@ -134,7 +166,10 @@ export default function TicketManagement() {
                                 </button>
                             </div>
                         ) : (
-                            <p className="mt-4 text-sm text-gray-500 italic">This ticket is marked as resolved. You can no longer reply.</p>
+                            <p className="mt-4 text-sm text-gray-500 italic">
+                                This ticket is marked as resolved. You can no
+                                longer reply.
+                            </p>
                         )}
                     </div>
                 )}
