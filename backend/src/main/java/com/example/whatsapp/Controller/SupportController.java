@@ -48,11 +48,11 @@ public class SupportController {
     @PostMapping("/{ticketId}/reply")
     public TicketResponseDTO replyToTicket(
             @PathVariable Long ticketId,
-            @RequestParam Long managerId,
+            @RequestParam Long senderId,
             @RequestParam String senderType,
             @RequestParam String message
     ) {
-        return supportService.replyToTicket(ticketId, senderType,managerId, message);
+        return supportService.replyToTicket(ticketId, senderType,senderId, message);
     }
     //
     @PutMapping("/{ticketId}/resolve")

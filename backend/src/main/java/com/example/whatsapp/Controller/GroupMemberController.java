@@ -15,7 +15,7 @@ import java.util.List;
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
-    //
+    //load the group chat members
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<List<GroupMember>> getMembersByChat(@PathVariable Long chatId) {
         return ResponseEntity.ok(groupMemberService.getMembersByChat(chatId));
