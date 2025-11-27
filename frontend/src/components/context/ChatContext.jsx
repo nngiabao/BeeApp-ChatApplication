@@ -147,7 +147,22 @@ export function ChatProvider({ children }) {
             });
         });
     };
+    //load group members
+    const loadGroupMembers = async (chatId) => {
+        try {
+            const res = await fetch(`http://localhost:8080/groups/chat/${chatId}`);
+            const data = await res.json();
 
+            if (Array.isArray(data)) {
+                setMembersByChat((prev) => ({
+                    ...prev,
+                    [chatId]: data,
+                }));
+            }
+        } catch (err) {
+            console.error("❌ Failed to load group members:", err);
+        }
+    };
     // 📨 Send message
     const sendMessage = (msg) => {
         if (!currentChat || !user?.id) return;
@@ -162,13 +177,20 @@ export function ChatProvider({ children }) {
             mediaUrl: msg.mediaUrl || null,
             sentAt: new Date().toISOString(),
         };
-
+        /*
         setMessagesByChat((prev) => ({
             ...prev,
             [chatId]: [...(prev[chatId] || []), localMsg],
-        }));
+        }));*/
 
         socketSendMessage(chatId, user.id, msg.content, msg.messageType, msg.mediaUrl);
+    };
+    //
+    const addChatToList = (chat) => {
+        setChatList(prev => {
+            if (prev.some(c => c.id === chat.id)) return prev; // avoid duplicates
+            return [...prev, chat];
+        });
     };
 
     // Filtering
@@ -189,7 +211,9 @@ export function ChatProvider({ children }) {
         setActiveFilter,
         selectChat,
         sendMessage,
+        loadGroupMembers,
         getFilteredChats,
+        addChatToList,
     };
 
     return (
