@@ -45,4 +45,33 @@ public class GroupMemberController {
                 ? ResponseEntity.ok("Member removed successfully")
                 : ResponseEntity.badRequest().body("Member not found");
     }
+    //update group profile picture
+    @PostMapping("/{chatId}/picture")
+    public ResponseEntity<?> updateGroupPicture(
+            @PathVariable Long chatId,
+            @RequestParam String imgUrl
+    ) {
+        boolean updated = groupMemberService.updateGroupPicture(chatId, imgUrl);
+
+        if (updated) {
+            return ResponseEntity.ok("Group picture updated successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to update group picture.");
+        }
+    }
+
+    //update group name
+    @PostMapping("/{chatId}/rename")
+    public ResponseEntity<?> renameGroup(
+            @PathVariable Long chatId,
+            @RequestParam String name
+    ) {
+        boolean updated = groupMemberService.renameGroup(chatId, name);
+
+        if (updated) {
+            return ResponseEntity.ok("Group name updated successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to rename group.");
+        }
+    }
 }

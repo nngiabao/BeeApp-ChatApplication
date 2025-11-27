@@ -1,8 +1,10 @@
 package com.example.whatsapp.Service;
 
 import com.example.whatsapp.DTO.GroupMemberDTO;
+import com.example.whatsapp.Entity.Chat;
 import com.example.whatsapp.Entity.GroupMember;
 import com.example.whatsapp.Entity.User;
+import com.example.whatsapp.Repository.ChatRepository;
 import com.example.whatsapp.Repository.GroupMemberRepository;
 import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ public class GroupMemberService {
 
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
 
     //Get all members in a chat
     public List<GroupMemberDTO> getGroupMembers(Long chatId) {
@@ -63,5 +66,42 @@ public class GroupMemberService {
             return true;
         }
         return false;
+    }
+
+    //update group profile picture
+    public boolean updateGroupPicture(Long chatId, String imgUrl) {
+        try {
+            Chat chat = chatRepository.findById(chatId)
+                    .orElseThrow(() -> new RuntimeException("Chat not found"));
+
+            chat.setChatImageUrl(imgUrl);
+            chatRepository.save(chat);
+
+            return true;
+        } catch (Exception e) {
+            System.out.println("Error updating group picture: " + e.getMessage());
+            return false;
+        }
+    }
+
+    //update group name
+    public boolean renameGroup(Long chatId, String name) {
+        try {
+            Chat chat = chatRepository.findById(chatId)
+                    .orElseThrow(() -> new RuntimeException("Chat not found"));
+
+            // optional validation
+            if (name.length() < 1 || name.length() > 30) {
+                throw new RuntimeException("Name must be 1–30 characters.");
+            }
+
+            chat.setTitle(name);
+            chatRepository.save(chat);
+
+            return true;
+        } catch (Exception e) {
+            System.out.println("❌ Error renaming group: " + e.getMessage());
+            return false;
+        }
     }
 }
