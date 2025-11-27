@@ -110,7 +110,7 @@ export function ChatProvider({ children }) {
         // Load group members if needed
         if (chat.type === "GROUP" && !membersByChat[chatId]) {
             const res = await fetch(
-                `http://localhost:8080/groups/chat/${chatId}`
+                `http://localhost:8080/groups/${chatId}/members`
             );
             const data = await res.json();
             if (Array.isArray(data)) {
@@ -150,13 +150,13 @@ export function ChatProvider({ children }) {
     //load group members
     const loadGroupMembers = async (chatId) => {
         try {
-            const res = await fetch(`http://localhost:8080/groups/chat/${chatId}`);
+            const res = await fetch(`http://localhost:8080/groups/${chatId}/members`);
             const data = await res.json();
 
-            if (Array.isArray(data)) {
+            if (Array.isArray(data.data)) {
                 setMembersByChat((prev) => ({
                     ...prev,
-                    [chatId]: data,
+                    [chatId]: data.data,
                 }));
             }
         } catch (err) {

@@ -81,23 +81,26 @@ export const unsubscribeFromChat = (chatId) => {
 };
 
 // ✉️ Send message safely
-export const sendMessage = (chatId, senderId, content, messageType = "text", mediaUrl = null) => {
-    if (!connected) {
-        console.warn("⚠️ Cannot send message — WebSocket disconnected.");
+export function sendMessage(chatId, senderId, messageContent, messageType = "TEXT", mediaUrl = null) {
+    if (!stompClient || !stompClient.connected) {
+        console.error("Cannot send message. STOMP client is not connected.");
         return;
     }
 
-    const msg = {
+    const payload = {
         chatId,
         senderId,
-        content,
+        content: messageContent,
         messageType,
         mediaUrl,
         sentAt: new Date().toISOString(),
     };
 
-    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
-};
+    stompClient.publish({
+        destination: "/app/chat.sendMessage",
+        body: JSON.stringify(payload),
+    });
+}
 
 // 🛑 Optional disconnect
 export const disconnectWebSocket = () => {
