@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Pencil, Phone, Lock, LogOut, LifeBuoy } from "lucide-react";
 import { useUser } from "../context/UserContext.jsx";
 
-export default function ProfileInfo() {
+export default function ProfileInfo({ setActiveTicket }) {
     const { user, updateUser, changePassword } = useUser();
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [showTicketModal, setShowTicketModal] = useState(false);
@@ -27,7 +27,7 @@ export default function ProfileInfo() {
     const [userTickets, setUserTickets] = useState([]);
     //
     const [showReplyModal, setShowReplyModal] = useState(false);
-    const [selectedTicket, setSelectedTicket] = useState(null);
+    //const [selectedTicket, setSelectedTicket] = useState(null);
     const [replyMessage, setReplyMessage] = useState("");
     // Load user's tickets
     useEffect(() => {
@@ -299,23 +299,18 @@ export default function ProfileInfo() {
                         Status: {ticket.status} • {new Date(ticket.createdAt).toLocaleString()}
                     </div>
 
-                    {/* Show "Reply" button if status is OPEN */}
-                    {ticket.status === "OPEN" && (
-                        <div className="mt-2">
-                            <button
-                                className="text-blue-600 text-xs underline hover:text-blue-800"
-                                onClick={() => {
-                                    setSelectedTicket(ticket);
-                                    setReplyMessage("");
-                                    setShowReplyModal(true);
-                                }}
-                            >
-                                Reply
-                            </button>
-                        </div>
-                    )}
+                    {/* Always allow opening ticket */}
+                    <div className="mt-2">
+                        <button
+                            className="text-blue-600 text-xs underline hover:text-blue-800"
+                            onClick={() => setActiveTicket(ticket)}
+                        >
+                            Open
+                        </button>
+                    </div>
                 </li>
             ))}
+
             {/*reply modal ticket UI*/}
             {showReplyModal && selectedTicket && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
