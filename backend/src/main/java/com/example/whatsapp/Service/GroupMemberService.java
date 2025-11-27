@@ -2,19 +2,27 @@ package com.example.whatsapp.Service;
 
 import com.example.whatsapp.DTO.GroupMemberDTO;
 import com.example.whatsapp.Entity.GroupMember;
+import com.example.whatsapp.Entity.User;
 import com.example.whatsapp.Repository.GroupMemberRepository;
+import com.example.whatsapp.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 
 @Service
 @RequiredArgsConstructor
 public class GroupMemberService {
 
     private final GroupMemberRepository groupMemberRepository;
+    private final UserRepository userRepository;
 
+    //Get all members in a chat
+    public List<GroupMemberDTO> getGroupMembers(Long chatId) {
+        return groupMemberRepository.findMembersByChatId(chatId);
+    }
+    //
     // Get all members in a chat
     public List<GroupMember> getMembersByChat(Long chatId) {
         return groupMemberRepository.findByChatId(chatId);

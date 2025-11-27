@@ -1,7 +1,8 @@
-package com.example.whatsapp.Controller;
+package com.example.whatsapp.Controller; //
 
 import com.example.whatsapp.DTO.GroupMemberDTO;
 import com.example.whatsapp.Entity.GroupMember;
+import com.example.whatsapp.Payload.ApiResponse;
 import com.example.whatsapp.Service.GroupMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,16 @@ import java.util.List;
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
-    //load the group chat members
-    @GetMapping("/chat/{chatId}")
-    public ResponseEntity<List<GroupMember>> getMembersByChat(@PathVariable Long chatId) {
-        return ResponseEntity.ok(groupMemberService.getMembersByChat(chatId));
+
+    // GET all group members of one chat
+    @GetMapping("/{chatId}/members")
+    public ResponseEntity<ApiResponse<List<GroupMemberDTO>>> getGroupMembers(
+            @PathVariable Long chatId
+    ) {
+        List<GroupMemberDTO> members = groupMemberService.getGroupMembers(chatId);
+        return ResponseEntity.ok(
+                new ApiResponse<>("Group members loaded successfully", members)
+        );
     }
 
     @GetMapping("/user/{userId}")
