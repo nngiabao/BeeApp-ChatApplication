@@ -46,20 +46,22 @@ public class ContactService {
 
         Long contactId = targetUser.getId();
 
-        //Prevent self-adding
+        // ❌ Prevent self-adding
         if (userId.equals(contactId)) {
             throw new RuntimeException("You cannot add yourself as a contact.");
         }
 
-        //Prevent duplicate contact
+        // ❌ Prevent duplicate contact (A → B)
         if (contactRepository.existsByUserIdAndContactId(userId, contactId)) {
             throw new RuntimeException("This contact already exists.");
         }
-        //use user’s name if alias is null or blank
+
+        // ✅ Use alias if available, else fallback to user's name
         String finalAlias = (alias == null || alias.trim().isEmpty())
                 ? targetUser.getName()
                 : alias.trim();
-        //Save new contact
+
+        // ✅ Save A → B
         Contact contact = Contact.builder()
                 .userId(userId)
                 .contactId(contactId)
@@ -68,8 +70,27 @@ public class ContactService {
                 .isBlocked(false)
                 .build();
 
-        return contactRepository.save(contact);
+        contactRepository.save(contact);
+
+        // ✅ Also save B → A (reverse), but only if it doesn’t already exist
+        if (!contactRepository.existsByUserIdAndContactId(contactId, userId)) {
+            // Fetch current user to get name for reverse alias
+            User currentUser = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+            Contact reverse = Contact.builder()
+                    .userId(contactId)
+                    .contactId(userId)
+                    .alias(currentUser.getName())
+                    .createdAt(LocalDateTime.now())
+                    .isBlocked(false)
+                    .build();
+
+            contactRepository.save(reverse);
+        }
+        return contact;
     }
+
 
 
     //update

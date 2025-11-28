@@ -1,6 +1,7 @@
 package com.example.whatsapp.Service;
 
 import com.example.whatsapp.DTO.GroupMemberDTO;
+import com.example.whatsapp.DTO.UserDTO;
 import com.example.whatsapp.Entity.Chat;
 import com.example.whatsapp.Entity.GroupMember;
 import com.example.whatsapp.Entity.User;
@@ -109,13 +110,35 @@ public class GroupMemberService {
         }
     }
     //
-    public GroupMember addMemberToGroup(Long chatId, Long newUserId) {
+    public void addMember(Long chatId, Long userId) {
+
+        // Check if already exists
+        boolean exists = groupMemberRepository.existsByChatIdAndUserId(chatId, userId);
+        if (exists) {
+            throw new RuntimeException("User already in group");
+        }
+
         GroupMember gm = GroupMember.builder()
                 .chatId(chatId)
-                .userId(newUserId)
+                .userId(userId)
                 .role("MEMBER")
                 .build();
 
-        return groupMemberRepository.save(gm);
+        groupMemberRepository.save(gm);
     }
+    //
+    public List<UserDTO> getEligibleContacts(Long chatId, Long adminId) {
+
+        List<User> users = groupMemberRepository.findContactsNotInGroup(adminId, chatId);
+
+        return users.stream()
+                .map(u -> UserDTO.builder()
+                        .username(u.getUsername())
+                        .phoneNumber(u.getPhoneNumber())
+                        .name(u.getName())
+                        .profilePicture(u.getProfilePicture())
+                        .build())
+                .toList();
+    }
+
 }

@@ -101,7 +101,7 @@ public class GroupMemberController {
             @PathVariable Long chatId,
             @PathVariable Long userId
     ) {
-        groupMemberService.addMemberToGroup(chatId, userId);
-        return ResponseEntity.ok(new ApiResponse<>("Member added successfully"));
+        groupMemberService.addMember(chatId, userId);
+        return ResponseEntity.ok(new ApiResponse<>("Member added successfully", null));
     }
 }
