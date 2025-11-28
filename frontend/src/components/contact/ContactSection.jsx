@@ -1,186 +1,131 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useContactList } from "../context/ContactContext";
+// src/components/ContactSection.jsx
+import React, { useState, useEffect } from "react";
 import { useChat } from "../context/ChatContext";
 import { useUser } from "../context/UserContext";
-import { UserX, Trash2, MessageCircle, Ban, Star } from "lucide-react";
 
 export default function ContactSection() {
-    const { contacts, loading, error } = useContactList();
-    const { chatList, selectChat, setChatList } = useChat();
+    const { chatList, addChatToList, selectChat } = useChat();
     const { user } = useUser();
 
-    const [menuPos, setMenuPos] = useState(null);
-    const [selectedContact, setSelectedContact] = useState(null);
-    const menuRef = useRef();
+    const [contacts, setContacts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // 🧩 Load user's contacts
     useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-                setMenuPos(null);
-            }
-        };
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, []);
+        if (!user?.id) return;
 
-    if (loading) return <p className="text-gray-500">Loading contacts...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
+        fetch(`http://localhost:8080/contacts/user/${user.id}`)
+            .then((res) => res.json())
+            .then((data) => setContacts(data.data || []))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [user?.id]);
 
-    const visibleContacts = contacts.filter((contact) => !contact.blocked);
+    // 🔍 Find existing individual/private chat
+    const findExistingChatWithContact = (contact) => {
+        if (!Array.isArray(chatList)) return null;
 
-    const handleContextMenu = (e, contact) => {
-        e.preventDefault();
-        setSelectedContact(contact);
-        setMenuPos({ x: e.clientX, y: e.clientY });
-    };
+        return chatList.find((chat) => {
+            if (chat.type !== "PRIVATE" && chat.type !== "INDIVIDUAL") return false;
 
-    const handleAction = async (action) => {
-        console.log(`👉 ${action} on contact:`, selectedContact);
-        setMenuPos(null);
-
-        if (action === "remove") {
-            try {
-                const res = await fetch(
-                    `http://localhost:8080/contacts/user/${user.id}/contact/${selectedContact.contactId}`,
-                    { method: "DELETE" }
+            if (Array.isArray(chat.participants)) {
+                return (
+                    chat.participants.some((p) => p.id === user.id) &&
+                    chat.participants.some((p) => p.id === contact.contactId)
                 );
-                if (!res.ok) throw new Error("Failed to delete contact");
-                window.location.reload();
-            } catch (err) {
-                console.error("❌ Failed to delete contact:", err);
-                alert("Failed to delete contact.");
             }
-        }
+
+            // Fallback matching
+            return (
+                (chat.user1Id === user.id && chat.user2Id === contact.contactId) ||
+                (chat.user2Id === user.id && chat.user1Id === contact.contactId)
+            );
+        });
     };
 
+    // 📨 Open or create chat
     const handleOpenChat = async (contact) => {
-        try {
-            const existingChat = chatList.find(
-                (chat) =>
-                    chat.type === "PRIVATE" &&
-                    chat.members?.some((m) => m.userId === contact.contactId)
-            );
+        if (!user?.id || !contact?.contactId) return;
 
-            if (existingChat) {
-                const finalChat = {
-                    ...existingChat,
-                    imgUrl: contact.profilePicture,
-                };
-                selectChat(finalChat);
+        try {
+            // 1️⃣ Try existing chat
+            const existing = findExistingChatWithContact(contact);
+
+            if (existing) {
+                selectChat(existing);
                 return;
             }
 
-            const body = {
-                title: contact.alias || contact.contactName,
+            // 2️⃣ Create new chat
+            const chatRequest = {
                 createdBy: user.id,
-                contactId: contact.contactId,
+                contactId: contact.contactId
             };
 
             const res = await fetch("http://localhost:8080/chats/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+                body: JSON.stringify(chatRequest),
             });
 
-            if (!res.ok) throw new Error("Failed to create chat");
+            const newChat = await res.json();
 
-            const chat = await res.json();
-            const finalChat = {
-                ...chat,
-                imgUrl: contact.profilePicture,
-                alias: contact.alias,
-                contactId: contact.contactId,
+            // 3️⃣ Enrich chat object with contact info for header
+            const enrichedChat = {
+                ...newChat,
+                title: contact.alias || contact.name,           // name
+                imgUrl: contact.profilePicture,                 // avatar
+                isOnline: contact.isOnline || false,            // online
+                participants: [
+                    { id: user.id },
+                    { id: contact.contactId, name: contact.name, profilePicture: contact.profilePicture }
+                ]
             };
 
-            setChatList((prev) => [...prev, finalChat]);
-            selectChat(finalChat);
+            addChatToList(enrichedChat);  // store in chatList
+            selectChat(enrichedChat);     // open chat
+
         } catch (err) {
-            console.error("❌ Failed to open or create chat:", err);
+            console.error("❌ Error creating/opening chat:", err);
         }
     };
 
+
+    if (loading) return <div className="p-4">Loading contacts...</div>;
+
     return (
-        <div className="relative">
-            <h2 className="text-sm text-gray-500 mb-2">Contacts on BeeApp</h2>
+        <div className="p-4">
+            <h2 className="text-lg font-semibold mb-3">Contacts</h2>
 
-            <div className="space-y-1">
-                {visibleContacts.length === 0 ? (
-                    <p className="text-gray-400 text-sm">No available contacts.</p>
+            <div className="space-y-2">
+                {contacts.length === 0 ? (
+                    <div className="text-gray-500">No contacts found.</div>
                 ) : (
-                    visibleContacts.map((contact) => (
+                    contacts.map((c) => (
                         <div
-                            key={contact.id}
-                            onClick={() => handleOpenChat(contact)}
-                            onContextMenu={(e) => handleContextMenu(e, contact)}
-                            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition"
+                            key={c.id}
+                            onClick={() => handleOpenChat(c)}
+                            className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer"
                         >
-                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center overflow-hidden text-white">
-                                {contact.profilePicture ? (
-                                    <img
-                                        src={contact.profilePicture}
-                                        alt={contact.alias || "User"}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="text-sm font-semibold">
-                                        {contact.alias
-                                            ? contact.alias.charAt(0).toUpperCase()
-                                            : "?"}
-                                    </span>
-                                )}
-                            </div>
+                            <img
+                                src={
+                                    c.profilePicture ||
+                                    "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"
+                                }
+                                alt="avatar"
+                                className="w-10 h-10 rounded-full object-cover"
+                            />
 
-                            <div>
-                                <p className="font-medium text-gray-900">
-                                    {contact.alias || "Unnamed Contact"}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    {contact.statusMessage || "Available"}
-                                </p>
+                            <div className="ml-3">
+                                <div className="font-medium">{c.alias || c.name}</div>
+                                <div className="text-sm text-gray-500">
+                                    {c.phoneNumber}
+                                </div>
                             </div>
                         </div>
                     ))
                 )}
             </div>
-
-            {menuPos && (
-                <div
-                    ref={menuRef}
-                    className="fixed bg-white border border-gray-200 rounded-xl shadow-lg w-48 py-2 z-50"
-                    style={{ top: menuPos.y, left: menuPos.x }}
-                >
-                    <button
-                        onClick={() => handleAction("message")}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                        <MessageCircle className="w-4 h-4 mr-2" /> Message
-                    </button>
-                    <button
-                        onClick={() => handleAction("favorite")}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                        <Star className="w-4 h-4 mr-2" /> Add to favorites
-                    </button>
-                    <button
-                        onClick={() => handleAction("block")}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    >
-                        <Ban className="w-4 h-4 mr-2" /> Block contact
-                    </button>
-                    <button
-                        onClick={() => handleAction("remove")}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    >
-                        <UserX className="w-4 h-4 mr-2" /> Remove contact
-                    </button>
-                    <button
-                        onClick={() => handleAction("delete")}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" /> Delete chat
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
