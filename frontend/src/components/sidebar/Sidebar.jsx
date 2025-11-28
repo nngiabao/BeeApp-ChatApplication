@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import SidebarNav from "./SidebarNav";
-import ChatList from "./ChatList";
+import ChatList from "./ChatListItem";
 import ContactList from "../contact/ContactList";
 import SettingsPanel from "../Setting/SettingPanel";
 
