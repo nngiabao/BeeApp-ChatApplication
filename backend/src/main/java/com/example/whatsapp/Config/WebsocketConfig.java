@@ -13,8 +13,10 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                //allow all origins (localhost, IPs, etc.)
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins(
+                        "http://localhost:5173",
+                        "https://beeapp6688.vercel.app"
+                )
                 .withSockJS();
     }
 

@@ -7,10 +7,9 @@ let connected = false;
 let activeSubscriptions = {};
 let connectCallbackQueue = [];
 
-export const isConnected = () => connected;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
-// 🔌 WebSocket URL from Vite env variables
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:8080/ws";
+export const isConnected = () => connected;
 
 // 🔌 Connect WebSocket (connect only once)
 export const connectWebSocket = () => {
@@ -19,9 +18,6 @@ export const connectWebSocket = () => {
         return;
     }
 
-    console.log("🔌 Connecting WebSocket to:", SOCKET_URL);
-
-    // Use production URL or local URL
     const socket = new SockJS(SOCKET_URL);
     stompClient = Stomp.over(socket);
 
@@ -31,7 +27,7 @@ export const connectWebSocket = () => {
         {},
         () => {
             connected = true;
-            console.log("✅ WebSocket connected:", SOCKET_URL);
+            console.log("✅ WebSocket connected");
 
             connectCallbackQueue.forEach((cb) => cb());
             connectCallbackQueue = [];
@@ -48,7 +44,7 @@ export const connectWebSocket = () => {
     );
 };
 
-// 🚀 Subscribe AFTER WebSocket is ready
+// 🚀 Subscribe AFTER connected
 export const subscribeToChat = (chatId, onMessageReceived) => {
     const subscribeFn = () => {
         if (activeSubscriptions[chatId]) return;
@@ -66,23 +62,23 @@ export const subscribeToChat = (chatId, onMessageReceived) => {
         });
     };
 
-    if (connected) {
-        subscribeFn();
-    } else {
-        connectCallbackQueue.push(subscribeFn);
+    if (connected) subscribeFn();
+    else connectCallbackQueue.push(subscribeFn);
+};
+
+// OPTIONAL
+export const unsubscribeFromChat = (chatId) => {
+    const sub = activeSubscriptions[chatId];
+    if (sub) {
+        sub.unsubscribe();
+        delete activeSubscriptions[chatId];
+        console.log(`🚫 Unsubscribed from /topic/chat/${chatId}`);
     }
 };
 
-// Do NOT unsubscribe when switching chats
-export const unsubscribeFromChat = () => {
-    // Disabled on purpose (WhatsApp style)
-    return;
-};
-
-// ✉️ Send message
-export function sendMessage(chatId, senderId, messageContent, messageType = "TEXT", mediaUrl = null) {
+export const sendMessage = (chatId, senderId, messageContent, messageType = "TEXT", mediaUrl = null) => {
     if (!stompClient || !stompClient.connected) {
-        console.error("Cannot send message. STOMP is not connected.");
+        console.error("Cannot send message. STOMP client is not connected.");
         return;
     }
 
@@ -99,4 +95,13 @@ export function sendMessage(chatId, senderId, messageContent, messageType = "TEX
         destination: "/app/chat.sendMessage",
         body: JSON.stringify(payload),
     });
-}
+};
+
+export const disconnectWebSocket = () => {
+    if (stompClient) {
+        stompClient.disconnect(() => console.log("🛑 WebSocket disconnected"));
+    }
+    stompClient = null;
+    connected = false;
+    activeSubscriptions = {};
+};
