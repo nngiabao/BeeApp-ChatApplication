@@ -37,14 +37,24 @@ public class GroupMemberController {
     public ResponseEntity<GroupMember> addMember(@RequestBody GroupMemberDTO dto) {
         return ResponseEntity.ok(groupMemberService.addMember(dto));
     }
-
-    @DeleteMapping("/remove/{chatId}/{userId}")
-    public ResponseEntity<String> removeMember(@PathVariable Long chatId, @PathVariable Long userId) {
+    //remove member
+    @DeleteMapping("/{chatId}/remove/{userId}")
+    public ResponseEntity<ApiResponse<String>> removeMember(
+            @PathVariable Long chatId,
+            @PathVariable Long userId
+    ) {
         boolean removed = groupMemberService.removeMember(chatId, userId);
-        return removed
-                ? ResponseEntity.ok("Member removed successfully")
-                : ResponseEntity.badRequest().body("Member not found");
+
+        if (!removed) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Failed to remove member", null));
+        }
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Member removed successfully", null)
+        );
     }
+
     //update group profile picture
     @PostMapping("/{chatId}/picture")
     public ResponseEntity<?> updateGroupPicture(

@@ -61,12 +61,16 @@ public class GroupMemberService {
     }
     // Remove member
     public boolean removeMember(Long chatId, Long userId) {
-        if (groupMemberRepository.existsByChatIdAndUserId(chatId, userId)) {
-            groupMemberRepository.deleteById(new com.example.whatsapp.Entity.GroupMemberId(chatId, userId));
-            return true;
+        Optional<GroupMember> gm = groupMemberRepository.findByChatIdAndUserId(chatId, userId);
+
+        if (gm.isEmpty()) {
+            return false;
         }
-        return false;
+
+        groupMemberRepository.delete(gm.get());
+        return true;
     }
+
 
     //update group profile picture
     public boolean updateGroupPicture(Long chatId, String imgUrl) {
