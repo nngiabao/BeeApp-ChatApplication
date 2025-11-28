@@ -5,9 +5,12 @@ import SockJS from "sockjs-client";
 let stompClient = null;
 let connected = false;
 let activeSubscriptions = {};
-let connectCallbackQueue = [];   // <-- Callbacks waiting for connection
+let connectCallbackQueue = [];
 
 export const isConnected = () => connected;
+
+// 🔌 WebSocket URL from Vite env variables
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:8080/ws";
 
 // 🔌 Connect WebSocket (connect only once)
 export const connectWebSocket = () => {
@@ -16,19 +19,20 @@ export const connectWebSocket = () => {
         return;
     }
 
-    const socket = new SockJS("http://localhost:8080/ws");
+    console.log("🔌 Connecting WebSocket to:", SOCKET_URL);
+
+    // Use production URL or local URL
+    const socket = new SockJS(SOCKET_URL);
     stompClient = Stomp.over(socket);
 
-    // Remove verbose logs
     stompClient.debug = () => {};
 
     stompClient.connect(
         {},
         () => {
             connected = true;
-            console.log("✅ WebSocket connected");
+            console.log("✅ WebSocket connected:", SOCKET_URL);
 
-            // Run all callbacks waiting for connection
             connectCallbackQueue.forEach((cb) => cb());
             connectCallbackQueue = [];
         },
@@ -65,25 +69,20 @@ export const subscribeToChat = (chatId, onMessageReceived) => {
     if (connected) {
         subscribeFn();
     } else {
-        console.log(`⏳ Waiting for WebSocket before subscribing to chat ${chatId}`);
         connectCallbackQueue.push(subscribeFn);
     }
 };
 
-// 🚫 Unsubscribe from chat
-export const unsubscribeFromChat = (chatId) => {
-    const sub = activeSubscriptions[chatId];
-    if (sub) {
-        sub.unsubscribe();
-        delete activeSubscriptions[chatId];
-        console.log(`🚫 Unsubscribed from /topic/chat/${chatId}`);
-    }
+// Do NOT unsubscribe when switching chats
+export const unsubscribeFromChat = () => {
+    // Disabled on purpose (WhatsApp style)
+    return;
 };
 
-// ✉️ Send message safely
+// ✉️ Send message
 export function sendMessage(chatId, senderId, messageContent, messageType = "TEXT", mediaUrl = null) {
     if (!stompClient || !stompClient.connected) {
-        console.error("Cannot send message. STOMP client is not connected.");
+        console.error("Cannot send message. STOMP is not connected.");
         return;
     }
 
@@ -101,13 +100,3 @@ export function sendMessage(chatId, senderId, messageContent, messageType = "TEX
         body: JSON.stringify(payload),
     });
 }
-
-// 🛑 Optional disconnect
-export const disconnectWebSocket = () => {
-    if (stompClient) {
-        stompClient.disconnect(() => console.log("🛑 WebSocket disconnected"));
-    }
-    stompClient = null;
-    connected = false;
-    activeSubscriptions = {};
-};
