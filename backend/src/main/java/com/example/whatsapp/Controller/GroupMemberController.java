@@ -1,6 +1,7 @@
 package com.example.whatsapp.Controller; //
 
 import com.example.whatsapp.DTO.GroupMemberDTO;
+import com.example.whatsapp.DTO.UserDTO;
 import com.example.whatsapp.Entity.GroupMember;
 import com.example.whatsapp.Payload.ApiResponse;
 import com.example.whatsapp.Service.GroupMemberService;
@@ -83,5 +84,24 @@ public class GroupMemberController {
         } else {
             return ResponseEntity.badRequest().body("Failed to rename group.");
         }
+    }
+    //Get eligible contacts (not in the group)
+    @GetMapping("/{chatId}/eligible-contacts/{adminId}")
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getEligibleContacts(
+            @PathVariable Long chatId,
+            @PathVariable Long adminId
+    ) {
+        List<UserDTO> users = groupMemberService.getEligibleContacts(chatId, adminId);
+        return ResponseEntity.ok(new ApiResponse<>("Eligible contacts loaded", users));
+    }
+
+    //Add new member
+    @PostMapping("/{chatId}/add/{userId}")
+    public ResponseEntity<ApiResponse<String>> addMember(
+            @PathVariable Long chatId,
+            @PathVariable Long userId
+    ) {
+        groupMemberService.addMemberToGroup(chatId, userId);
+        return ResponseEntity.ok(new ApiResponse<>("Member added successfully"));
     }
 }

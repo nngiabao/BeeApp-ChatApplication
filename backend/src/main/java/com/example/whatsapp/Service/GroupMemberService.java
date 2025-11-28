@@ -108,4 +108,14 @@ public class GroupMemberService {
             return false;
         }
     }
+    //
+    public GroupMember addMemberToGroup(Long chatId, Long newUserId) {
+        GroupMember gm = GroupMember.builder()
+                .chatId(chatId)
+                .userId(newUserId)
+                .role("MEMBER")
+                .build();
+
+        return groupMemberRepository.save(gm);
+    }
 }
