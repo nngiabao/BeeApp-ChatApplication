@@ -84,20 +84,13 @@ export function ChatProvider({ children }) {
     const selectChat = async (chat) => {
         if (!chat) return;
 
-        // 🧹 UNSUBSCRIBE OLD CHAT
-        if (currentChat) {
-            unsubscribeFromChat(currentChat.id);
-        }
-
         setCurrentChat(chat);
 
         const chatId = chat.id;
 
         // Load messages if needed
         if (!messagesByChat[chatId]) {
-            const res = await fetch(
-                `http://localhost:8080/messages/chat/${chatId}`
-            );
+            const res = await fetch(`http://localhost:8080/messages/chat/${chatId}`);
             const data = await res.json();
             if (Array.isArray(data.data)) {
                 setMessagesByChat((prev) => ({
@@ -107,27 +100,29 @@ export function ChatProvider({ children }) {
             }
         }
 
-        // Load group members if needed
+        // Load members for group chat only once
         if (chat.type === "GROUP" && !membersByChat[chatId]) {
-            const res = await fetch(
-                `http://localhost:8080/groups/${chatId}/members`
-            );
+            const res = await fetch(`http://localhost:8080/groups/${chatId}/members`);
             const data = await res.json();
-            if (Array.isArray(data)) {
+            if (Array.isArray(data.data)) {
                 setMembersByChat((prev) => ({
                     ...prev,
-                    [chatId]: data,
+                    [chatId]: data.data,
                 }));
             }
         }
 
-        // Subscribe safely
+        // 👉 subscribe only if not already subscribed
         subscribeToChat(chatId, (savedMsg) => {
+            const chatId = savedMsg.chatId;
+
+            // add message to state
             setMessagesByChat((prev) => ({
                 ...prev,
                 [chatId]: [...(prev[chatId] || []), savedMsg],
             }));
 
+            // update chat list
             setChatList((prev) => {
                 const updated = prev.map((c) =>
                     c.id === chatId
@@ -138,15 +133,14 @@ export function ChatProvider({ children }) {
                         }
                         : c
                 );
-
                 return updated.sort(
                     (a, b) =>
-                        new Date(b.lastMessageTime || 0) -
-                        new Date(a.lastMessageTime || 0)
+                        new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0)
                 );
             });
         });
     };
+
     //load group members
     const loadGroupMembers = async (chatId) => {
         try {

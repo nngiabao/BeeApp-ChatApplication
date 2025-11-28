@@ -1,19 +1,26 @@
+// src/components/ChatInfoPanel.jsx
 import React, { useEffect, useState, useRef } from "react";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 import { useChat } from "../context/ChatContext";
 import { useUser } from "../context/UserContext";
+import { useContactList } from "../context/ContactContext";
+import AddMemberModal from "./AddMemberModal";
 
 export default function ChatInfoPanel({ open, onClose, chat }) {
   const { user } = useUser();
   const { membersByChat, loadGroupMembers, loadChatList } = useChat();
+  const { contacts } = useContactList();
 
   const [members, setMembers] = useState([]);
   const [renameOpen, setRenameOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [newName, setNewName] = useState(chat?.title || "");
 
   const fileInputRef = useRef(null);
 
-  // Load members
+  // -------------------------------------------------------------------
+  // Load group members
+  // -------------------------------------------------------------------
   useEffect(() => {
     if (chat?.type === "GROUP" && chat.id) {
       loadGroupMembers(chat.id);
@@ -26,18 +33,27 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
     }
   }, [membersByChat, chat]);
 
-  // 🔥 Correct admin check
-  const isAdmin = members.some(
-      (m) => m.userId === user?.id && m.role === "ADMIN"
-  );
+  // -------------------------------------------------------------------
+  // Determine if logged-in user is ADMIN
+  // -------------------------------------------------------------------
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (members.length > 0) {
+      const admin = members.some(
+          (m) => m.userId === user?.id && m.role === "ADMIN"
+      );
+      setIsAdmin(admin);
+    }
+  }, [members, user]);
 
   const avatarUrl =
       chat?.imgUrl ||
       "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png";
 
-  // --------------------
-  // CHANGE GROUP IMAGE
-  // --------------------
+  // -------------------------------------------------------------------
+  // Change group picture
+  // -------------------------------------------------------------------
   const handleGroupImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -70,10 +86,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
 
       chat.imgUrl = imageUrl;
       setMembers([...members]);
-
-      if (typeof loadChatList === "function") {
-        await loadChatList();
-      }
+      loadChatList();
 
       alert("Group picture updated!");
     } catch (err) {
@@ -82,9 +95,9 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
     }
   };
 
-  // --------------------
-  // RENAME GROUP
-  // --------------------
+  // -------------------------------------------------------------------
+  // Rename group
+  // -------------------------------------------------------------------
   const handleRenameGroup = async () => {
     if (!newName.trim() || newName.length > 30) {
       alert("Name must be 1–30 characters");
@@ -100,19 +113,16 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
 
     chat.title = newName;
     setRenameOpen(false);
-
-    if (typeof loadChatList === "function") {
-      await loadChatList();
-    }
+    loadChatList();
   };
 
-  // --------------------
-  // REMOVE MEMBER
-  // --------------------
+  // -------------------------------------------------------------------
+  // Remove member
+  // -------------------------------------------------------------------
   const removeMember = async (userId) => {
     try {
       await fetch(
-          `http://localhost:8080/groups/remove/${chat.id}/${userId}`,
+          `http://localhost:8080/groups/${chat.id}/remove/${userId}`,
           { method: "DELETE" }
       );
 
@@ -122,13 +132,16 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
     }
   };
 
+  // -------------------------------------------------------------------
+  // UI
+  // -------------------------------------------------------------------
   return (
       <div
           className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l border-gray-200 z-50 transform transition-transform duration-300 ${
               open ? "translate-x-0" : "translate-x-full"
           }`}
       >
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="font-semibold text-gray-800">
             {chat?.type === "GROUP" ? "Group Info" : "Contact Info"}
@@ -138,12 +151,11 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
           </button>
         </div>
 
-        {/* Profile Section */}
+        {/* PROFILE SECTION */}
         <div className="flex flex-col items-center p-6">
           <div className="relative">
             <img
                 src={avatarUrl}
-                alt={chat?.title}
                 className={`w-24 h-24 rounded-full mb-3 ${
                     isAdmin ? "cursor-pointer" : ""
                 }`}
@@ -173,35 +185,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
           <p className="text-sm text-gray-500 mt-1">Group chat</p>
         </div>
 
-        {/* Rename Modal */}
-        {renameOpen && (
-            <div className="absolute bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg">
-              <input
-                  type="text"
-                  value={newName}
-                  maxLength={30}
-                  className="w-full border rounded-lg p-2"
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Enter group name"
-              />
-
-              <button
-                  className="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg"
-                  onClick={handleRenameGroup}
-              >
-                Save
-              </button>
-
-              <button
-                  className="mt-2 w-full text-gray-500"
-                  onClick={() => setRenameOpen(false)}
-              >
-                Cancel
-              </button>
-            </div>
-        )}
-
-        {/* Admin Buttons */}
+        {/* ADMIN BUTTONS */}
         {isAdmin && (
             <div className="px-6 mb-3 flex flex-col gap-2">
               <button
@@ -220,14 +204,14 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
 
               <button
                   className="w-full bg-gray-200 py-2 rounded-lg hover:bg-gray-300"
-                  onClick={() => alert("Add member feature coming next")}
+                  onClick={() => setAddMemberOpen(true)}
               >
                 Add Member
               </button>
             </div>
         )}
 
-        {/* Members */}
+        {/* MEMBER LIST */}
         <div className="px-6 mt-4 overflow-y-auto max-h-[60%]">
           <h4 className="text-sm font-semibold text-gray-600 mb-2">
             Group Members
@@ -249,7 +233,6 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
                               m.profilePicture ||
                               "https://chatapp-beeapp.s3.us-east-2.amazonaws.com/invidual/default-profile.png"
                           }
-                          alt={m.name}
                           className="w-10 h-10 rounded-full mr-3 object-cover"
                       />
 
@@ -263,16 +246,16 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
                         <p className="text-gray-800 font-medium text-sm">
                           {m.name || m.username || "Unknown User"}
                         </p>
-                        <p className="text-xs text-gray-500">{m.role || "Member"}</p>
+                        <p className="text-xs text-gray-500">{m.role}</p>
                       </div>
 
-                      {/* Remove member button - only admin and not self */}
+                      {/* REMOVE ICON (ADMIN ONLY) */}
                       {isAdmin && m.userId !== user.id && (
                           <button
-                              className="absolute right-3 text-red-500 text-xs"
+                              className="absolute right-3 text-red-500 hover:text-red-700 transition"
                               onClick={() => removeMember(m.userId)}
                           >
-                            Remove
+                            <Trash2 size={17} />
                           </button>
                       )}
                     </div>
@@ -280,6 +263,46 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
               </div>
           )}
         </div>
+
+        {/* ADD MEMBER MODAL */}
+        <AddMemberModal
+            open={addMemberOpen}
+            onClose={() => setAddMemberOpen(false)}
+            contacts={contacts || []} // <-- this must contain 1–2 valid objects
+            chatId={chat.id}
+            groupMemberIds={members.map((m) => m.userId)}
+            onAdded={() => loadGroupMembers(chat.id)}
+        />
+
+        {/* RENAME MODAL */}
+        {renameOpen && (
+            <div className="absolute inset-0 bg-black/40 flex justify-center items-center z-50">
+              <div className="bg-white w-72 rounded-lg shadow-lg p-4">
+                <h3 className="text-lg font-semibold mb-3">Rename Group</h3>
+                <input
+                    type="text"
+                    value={newName}
+                    maxLength={30}
+                    className="w-full border rounded-lg p-2"
+                    onChange={(e) => setNewName(e.target.value)}
+                />
+
+                <button
+                    className="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg"
+                    onClick={handleRenameGroup}
+                >
+                  Save
+                </button>
+
+                <button
+                    className="mt-2 w-full text-gray-500"
+                    onClick={() => setRenameOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+        )}
       </div>
   );
 }
