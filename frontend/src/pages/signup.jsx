@@ -18,7 +18,7 @@ export default function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // ✅ Phone number must be exactly 10 digits
+        //Phone number must be exactly 10 digits
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(form.phoneNumber)) {
             setMessage("Phone number must be exactly 10 digits.");
@@ -26,7 +26,7 @@ export default function Signup() {
         }
 
         try {
-            const res = await axios.post("http://localhost:8080/users", {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
                 username: form.username,
                 name: form.name,
                 password: form.password,
