@@ -22,7 +22,6 @@ export default function TicketManagement() {
             `http://${import.meta.env.VITE_API_URL}/supports/${ticketId}/responses`
         );
         const data = await res.json();
-        console.log("🔥 Responses:", data.data);
         setResponses(data.data);
     };
 

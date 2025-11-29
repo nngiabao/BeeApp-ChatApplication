@@ -14,7 +14,6 @@ export default function ProfileInfo() {
             return;
         }
         // Call API for password update here
-        console.log("Password changed:", { oldPassword, newPassword });
         setShowPasswordForm(false);
         setOldPassword("");
         setNewPassword("");

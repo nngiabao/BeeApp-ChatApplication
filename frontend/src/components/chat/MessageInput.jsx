@@ -75,7 +75,6 @@ export default function MessageInput() {
                 mediaUrl: fileUrl,
             });
 
-            console.log("Uploaded and sent file:", fileUrl);
         } catch (err) {
             console.error("File upload error:", err);
             alert("Failed to upload file.");

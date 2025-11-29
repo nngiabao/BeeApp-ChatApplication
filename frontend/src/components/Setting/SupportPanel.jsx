@@ -11,7 +11,6 @@ export default function SupportTicketPopup({ onClose }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Support Ticket Sent:", form);
         setSuccess(true);
         setTimeout(() => {
             setSuccess(false);

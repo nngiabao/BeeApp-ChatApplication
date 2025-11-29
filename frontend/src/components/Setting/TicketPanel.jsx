@@ -8,7 +8,6 @@ export default function TicketPanel({ ticket, close }) {
     const loadResponses = async () => {
         const res = await fetch(`http://${import.meta.env.VITE_API_URL}/supports/${ticket.id}/responses`);
         const data = await res.json();
-        console.log("Loaded ticket responses:", data);
         setResponses(data.data || []);
     };
 
