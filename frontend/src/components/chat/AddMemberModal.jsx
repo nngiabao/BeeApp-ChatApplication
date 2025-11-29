@@ -12,11 +12,11 @@ export default function AddMemberModal({
 
     const [search, setSearch] = useState("");
 
-    // 🚨 DEBUG LOGS
+    // DEBUG LOGS
     console.log("CONTACTS:", contacts);
     console.log("GROUP MEMBER IDS:", groupMemberIds);
 
-    // ✅ Contacts not in the group
+    //Contacts not in the group
     const available = contacts.filter(
         (c) => !groupMemberIds.includes(c.contactId)
     );
@@ -30,7 +30,7 @@ export default function AddMemberModal({
 
     const handleAdd = async (userId) => {
         try {
-            await fetch(`http://${import.meta.env.VITE_API_URL}/groups/${chatId}/add/${userId}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/groups/${chatId}/add/${userId}`, {
                 method: "POST",
             });
 
