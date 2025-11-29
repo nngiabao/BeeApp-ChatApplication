@@ -24,7 +24,7 @@ export default function ProfileHeader() {
             formData.append("file", file);
             formData.append("type", "invidual"); // store under /individual/ folder
 
-            const res = await fetch("http://localhost:8080/aws/upload", {
+            const res = await fetch("http://${import.meta.env.VITE_API_URL}/aws/upload", {
                 method: "POST",
                 body: formData,
             });

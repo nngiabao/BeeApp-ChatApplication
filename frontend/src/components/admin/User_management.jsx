@@ -13,7 +13,7 @@ export default function UserManagement() {
     }, []);
 
     const fetchUsers = async () => {
-        const res = await fetch("http://localhost:8080/users");
+        const res = await fetch("http://${import.meta.env.VITE_API_URL}/users");
         const data = await res.json();
         setUsers(data.data);
     };
@@ -22,7 +22,7 @@ export default function UserManagement() {
 
     const handleToggleOnline = async (user) => {
         const body = JSON.stringify({ username: user.username });
-        await fetch(`http://localhost:8080/users/${user.isOnline ? "logout" : "login"}`, {
+        await fetch(`http://${import.meta.env.VITE_API_URL}/users/${user.isOnline ? "logout" : "login"}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body,
@@ -50,14 +50,14 @@ export default function UserManagement() {
     };
 
     const handleDeleteUser = async () => {
-        await fetch(`http://localhost:8080/users/${contextMenu.user.id}`, { method: "DELETE" });
+        await fetch(`http://${import.meta.env.VITE_API_URL}/users/${contextMenu.user.id}`, { method: "DELETE" });
         fetchUsers();
         setContextMenu({ ...contextMenu, visible: false });
     };
 
     const handleUpdateUser = async () => {
         try {
-            const res = await fetch(`http://localhost:8080/users/${selectedUser.id}`, {
+            const res = await fetch(`http://${import.meta.env.VITE_API_URL}/users/${selectedUser.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editForm),

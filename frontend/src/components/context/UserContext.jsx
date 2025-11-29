@@ -34,7 +34,7 @@ export function UserProvider({ children }) {
                 isOnline: user.isOnline,
                 accountType: user.accountType,
             };
-            const res = await fetch(`http://localhost:8080/users/${user.id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${user.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -60,7 +60,7 @@ export function UserProvider({ children }) {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/users/${user.id}/password?oldpass=${oldPassword}&newpass=${newPassword}`,
+                `${import.meta.env.VITE_API_URL}/users/${user.id}/password?oldpass=${oldPassword}&newpass=${newPassword}`,
                 { method: "PUT" }
             );
 

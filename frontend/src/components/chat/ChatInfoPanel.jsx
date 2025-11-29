@@ -68,7 +68,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
       formData.append("file", file);
       formData.append("type", "group");
 
-      const res = await fetch("http://localhost:8080/aws/upload", {
+      const res = await fetch("http://${import.meta.env.VITE_API_URL}/aws/upload", {
         method: "POST",
         body: formData,
       });
@@ -78,7 +78,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
       const imageUrl = await res.text();
 
       await fetch(
-          `http://localhost:8080/groups/${chat.id}/picture?imgUrl=${encodeURIComponent(
+          `http://${import.meta.env.VITE_API_URL}/groups/${chat.id}/picture?imgUrl=${encodeURIComponent(
               imageUrl
           )}`,
           { method: "POST" }
@@ -105,7 +105,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
     }
 
     await fetch(
-        `http://localhost:8080/groups/${chat.id}/rename?name=${encodeURIComponent(
+        `http://${import.meta.env.VITE_API_URL}/groups/${chat.id}/rename?name=${encodeURIComponent(
             newName
         )}`,
         { method: "POST" }
@@ -122,7 +122,7 @@ export default function ChatInfoPanel({ open, onClose, chat }) {
   const removeMember = async (userId) => {
     try {
       await fetch(
-          `http://localhost:8080/groups/${chat.id}/remove/${userId}`,
+          `http://${import.meta.env.VITE_API_URL}/groups/${chat.id}/remove/${userId}`,
           { method: "DELETE" }
       );
 

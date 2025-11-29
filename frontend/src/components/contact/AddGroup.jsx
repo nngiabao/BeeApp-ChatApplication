@@ -47,7 +47,7 @@ export default function AddGroupPanel({ onBack }) {
         };
 
         try {
-            const res = await fetch("http://localhost:8080/chats/group", {
+            const res = await fetch("http://${import.meta.env.VITE_API_URL}/chats/group", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody),

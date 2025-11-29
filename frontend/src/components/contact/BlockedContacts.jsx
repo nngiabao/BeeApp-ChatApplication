@@ -23,7 +23,7 @@ export default function BlockedContactsSection({ onBack }) {
     const confirmUnblockAction = async () => {
         if (confirmUnblock) {
             //Call backend endpoint to unblock
-            await axios.put(`http://localhost:8080/contacts/unblock/${confirmUnblock.id}`);
+            await axios.put(`http://${import.meta.env.VITE_API_URL}/contacts/unblock/${confirmUnblock.id}`);
             removeContact(confirmUnblock.id); // or update contact.blocked=false if you prefer keeping it
             setConfirmUnblock(null);
         }

@@ -9,7 +9,7 @@ export default function DashboardOverview() {
     });
 
     useEffect(() => {
-        fetch("http://localhost:8080/admin/overview")
+        fetch(`http://${import.meta.env.VITE_API_URL}/admin/overview`)
             .then(res => res.json())
             .then(data => {
                 setStats({

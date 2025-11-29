@@ -23,7 +23,7 @@ export function ContactListProvider({ children }) {
             setLoading(true);
             try {
                 const res = await axios.get(
-                    `http://localhost:8080/contacts/user/${user.id}`
+                    `${import.meta.env.VITE_API_URL}/contacts/user/${user.id}`
                 );
                 const list =
                     Array.isArray(res.data?.data)

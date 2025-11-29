@@ -10,7 +10,7 @@ export default function TicketManagement() {
 
     // Load all tickets
     useEffect(() => {
-        fetch("http://localhost:8080/supports")
+        fetch("http://${import.meta.env.VITE_API_URL}/supports")
             .then((res) => res.json())
             .then((data) => setTickets(data.data))
             .catch(console.error);
@@ -19,7 +19,7 @@ export default function TicketManagement() {
     // Load responses for a ticket
     const loadResponses = async (ticketId) => {
         const res = await fetch(
-            `http://localhost:8080/supports/${ticketId}/responses`
+            `http://${import.meta.env.VITE_API_URL}/supports/${ticketId}/responses`
         );
         const data = await res.json();
         console.log("🔥 Responses:", data.data);
@@ -37,7 +37,7 @@ export default function TicketManagement() {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/supports/${selectedTicket.id}/reply?senderId=${user.id}&senderType=ADMIN&message=${encodeURIComponent(
+                `http://${import.meta.env.VITE_API_URL}/supports/${selectedTicket.id}/reply?senderId=${user.id}&senderType=ADMIN&message=${encodeURIComponent(
                     newResponse
                 )}`,
                 { method: "POST" }
@@ -56,12 +56,12 @@ export default function TicketManagement() {
     // Mark as resolved
     const handleMarkResolved = async () => {
         await fetch(
-            `http://localhost:8080/supports/${selectedTicket.id}/resolve`,
+            `http://${import.meta.env.VITE_API_URL}/supports/${selectedTicket.id}/resolve`,
             { method: "PUT" }
         );
 
         // Refresh list
-        const res = await fetch("http://localhost:8080/supports");
+        const res = await fetch(`http://${import.meta.env.VITE_API_URL}/supports`);
         const data = await res.json();
         setTickets(data.data);
 

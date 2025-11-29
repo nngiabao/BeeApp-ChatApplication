@@ -30,7 +30,7 @@ export default function AddMemberModal({
 
     const handleAdd = async (userId) => {
         try {
-            await fetch(`http://localhost:8080/groups/${chatId}/add/${userId}`, {
+            await fetch(`http://${import.meta.env.VITE_API_URL}/groups/${chatId}/add/${userId}`, {
                 method: "POST",
             });
 

@@ -32,7 +32,7 @@ export default function ProfileInfo({ setActiveTicket }) {
     // Load user's tickets
     useEffect(() => {
         if (showTickets) {
-            fetch(`http://localhost:8080/supports/user/${user.id}`)
+            fetch(`http://${import.meta.env.VITE_API_URL}/supports/user/${user.id}`)
                 .then(res => res.json())
                 .then(data => setUserTickets(data.data || []))
                 .catch(() => setUserTickets([]));
@@ -41,7 +41,7 @@ export default function ProfileInfo({ setActiveTicket }) {
 
     const handleLogout = async () => {
         try {
-            await fetch("http://localhost:8080/users/logout", {
+            await fetch("http://${import.meta.env.VITE_API_URL}/users/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username: user.username }),
@@ -111,7 +111,7 @@ export default function ProfileInfo({ setActiveTicket }) {
             status: "pending"
         };
         try {
-            await fetch("http://localhost:8080/supports", {
+            await fetch("http://${import.meta.env.VITE_API_URL}/supports", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(ticket)
@@ -339,7 +339,7 @@ export default function ProfileInfo({ setActiveTicket }) {
                                 onClick={async () => {
 
                                     const response = await fetch(
-                                        `http://localhost:8080/supports/${selectedTicket.id}/reply?senderId=${user.id}&senderType=USER&message=${encodeURIComponent(replyMessage)}`,
+                                        `http://${import.meta.env.VITE_API_URL}/supports/${selectedTicket.id}/reply?senderId=${user.id}&senderType=USER&message=${encodeURIComponent(replyMessage)}`,
                                         { method: "POST" }
                                     );
                                     if (response.ok) {

@@ -59,7 +59,7 @@ export default function MessageInput() {
             formData.append("type", "file");
 
             // Upload to backend → AWS S3
-            const res = await fetch("http://localhost:8080/aws/upload", {
+            const res = await fetch("http://${import.meta.env.VITE_API_URL}/aws/upload", {
                 method: "POST",
                 body: formData,
             });
@@ -75,9 +75,9 @@ export default function MessageInput() {
                 mediaUrl: fileUrl,
             });
 
-            console.log("✅ Uploaded and sent file:", fileUrl);
+            console.log("Uploaded and sent file:", fileUrl);
         } catch (err) {
-            console.error("❌ File upload error:", err);
+            console.error("File upload error:", err);
             alert("Failed to upload file.");
         } finally {
             setUploading(false);
