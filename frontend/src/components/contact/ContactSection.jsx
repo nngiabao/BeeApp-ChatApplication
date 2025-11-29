@@ -11,18 +11,18 @@ export default function ContactSection() {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 🧩 Load user's contacts
+    // Load user's contacts
     useEffect(() => {
         if (!user?.id) return;
 
-        fetch(`http://localhost:8080/contacts/user/${user.id}`)
+        fetch(`http://${import.meta.env.VITE_API_URL}/contacts/user/${user.id}`)
             .then((res) => res.json())
             .then((data) => setContacts(data.data || []))
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [user?.id]);
 
-    // 🔒 Block or Unblock contact
+    //Block or Unblock contact
     const toggleBlock = async (contact) => {
         try {
             const endpoint = contact.blocked
@@ -31,7 +31,7 @@ export default function ContactSection() {
 
             const res = await fetch(endpoint, { method: "PUT" });
             if (!res.ok) {
-                console.error("❌ Block/Unblock failed:", res.status);
+                console.error("Block/Unblock failed:", res.status);
                 return;
             }
 
@@ -42,11 +42,11 @@ export default function ContactSection() {
                 )
             );
         } catch (err) {
-            console.error("❌ Error blocking/unblocking:", err);
+            console.error(" Error blocking/unblocking:", err);
         }
     };
 
-    // 🔍 Find existing chat
+    //Find existing chat
     const findExistingChatWithContact = (contact) => {
         if (!Array.isArray(chatList)) return null;
 
@@ -67,9 +67,9 @@ export default function ContactSection() {
         });
     };
 
-    // 📨 Open chat (disabled if blocked)
+    // Open chat (disabled if blocked)
     const handleOpenChat = async (contact) => {
-        if (contact.blocked) return; // ⛔ Do not open chat with blocked users
+        if (contact.blocked) return; //Do not open chat with blocked users
         if (!user?.id || !contact?.contactId) return;
 
         try {
@@ -85,7 +85,7 @@ export default function ContactSection() {
                 contactId: contact.contactId,
             };
 
-            const res = await fetch("http://localhost:8080/chats/create", {
+            const res = await fetch(`http://${import.meta.env.VITE_API_URL}/chats/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(chatRequest),

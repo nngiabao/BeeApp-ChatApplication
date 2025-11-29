@@ -30,7 +30,7 @@ export function ChatProvider({ children }) {
     const initializeChats = async () => {
         if (!user?.id) return;
 
-        const res = await fetch(`http://localhost:8080/chats/${user.id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/chats/${user.id}`);
         const data = await res.json();
 
         if (!Array.isArray(data)) return;
@@ -90,7 +90,7 @@ export function ChatProvider({ children }) {
 
         // Load messages if needed
         if (!messagesByChat[chatId]) {
-            const res = await fetch(`http://localhost:8080/messages/chat/${chatId}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/messages/chat/${chatId}`);
             const data = await res.json();
             if (Array.isArray(data.data)) {
                 setMessagesByChat((prev) => ({
@@ -102,7 +102,7 @@ export function ChatProvider({ children }) {
 
         // Load members for group chat only once
         if (chat.type === "GROUP" && !membersByChat[chatId]) {
-            const res = await fetch(`http://localhost:8080/groups/${chatId}/members`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/groups/${chatId}/members`);
             const data = await res.json();
             if (Array.isArray(data.data)) {
                 setMembersByChat((prev) => ({
@@ -144,7 +144,7 @@ export function ChatProvider({ children }) {
     //load group members
     const loadGroupMembers = async (chatId) => {
         try {
-            const res = await fetch(`http://localhost:8080/groups/${chatId}/members`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/groups/${chatId}/members`);
             const data = await res.json();
 
             if (Array.isArray(data.data)) {
@@ -183,7 +183,7 @@ export function ChatProvider({ children }) {
     const loadChatList = async () => {
         if (!user?.id) return;
         try {
-            const res = await fetch(`http://localhost:8080/chats/${user.id}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/chats/${user.id}`);
             const data = await res.json();
 
             if (Array.isArray(data)) {
