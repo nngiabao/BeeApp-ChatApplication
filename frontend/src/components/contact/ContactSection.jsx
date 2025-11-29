@@ -26,8 +26,8 @@ export default function ContactSection() {
     const toggleBlock = async (contact) => {
         try {
             const endpoint = contact.blocked
-                ? `http://localhost:8080/contacts/unblock/${contact.id}`
-                : `http://localhost:8080/contacts/block/${contact.id}`;
+                ? `${import.meta.env.VITE_API_URL}/contacts/unblock/${contact.id}`
+                : `${import.meta.env.VITE_API_URL}/block/${contact.id}`;
 
             const res = await fetch(endpoint, { method: "PUT" });
             if (!res.ok) {
@@ -85,7 +85,7 @@ export default function ContactSection() {
                 contactId: contact.contactId,
             };
 
-            const res = await fetch(`http://${import.meta.env.VITE_API_URL}/chats/create`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/chats/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(chatRequest),
@@ -107,7 +107,7 @@ export default function ContactSection() {
             addChatToList(enrichedChat);
             selectChat(enrichedChat);
         } catch (err) {
-            console.error("❌ Error creating/opening chat:", err);
+            console.error("Error creating/opening chat:", err);
         }
     };
 

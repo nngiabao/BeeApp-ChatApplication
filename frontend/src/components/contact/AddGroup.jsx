@@ -14,7 +14,7 @@ export default function AddGroupPanel({ onBack }) {
 
     if (loading) return <p className="text-gray-500">Loading contacts...</p>;
 
-    // ✅ Toggle select/deselect contacts
+    //Toggle select/deselect contacts
     const toggleSelect = (contact) => {
         setSelected((prev) =>
             prev.find((p) => p.contactId === contact.contactId)
@@ -35,9 +35,9 @@ export default function AddGroupPanel({ onBack }) {
         if (selected.length > 0) setStep(2);
     };
 
-    // ✅ Pass member IDs + group info to backend
+    //Pass member IDs + group info to backend
     const handleCreateGroup = async (groupData) => {
-        const memberIds = [user.id, ...selected.map((m) => m.contactId)]; // ✅ use contactId
+        const memberIds = [user.id, ...selected.map((m) => m.contactId)]; //use contactId
 
         const requestBody = {
             groupName: groupData.groupName,
@@ -47,7 +47,7 @@ export default function AddGroupPanel({ onBack }) {
         };
 
         try {
-            const res = await fetch("http://${import.meta.env.VITE_API_URL}/chats/group", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/chats/group`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody),
@@ -100,7 +100,7 @@ export default function AddGroupPanel({ onBack }) {
                         <span className="text-sm font-medium">{contact.alias}</span>
                         <X
                             className="w-4 h-4 ml-1 cursor-pointer"
-                            onClick={() => removeSelected(contact.contactId)} // ✅ fix
+                            onClick={() => removeSelected(contact.contactId)} // fix
                         />
                     </div>
                 ))}

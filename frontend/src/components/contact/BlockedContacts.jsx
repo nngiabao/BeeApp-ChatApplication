@@ -10,12 +10,12 @@ export default function BlockedContactsSection({ onBack }) {
     if (loading) return <p className="text-gray-500">Loading blocked contacts...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
-    // ✅ Only show blocked contacts
+    //Only show blocked contacts
     const blockedContacts = contacts.filter(
         (contact) => contact.blocked || contact.isBlocked
     );
 
-    // ✅ Handle unblock confirmation
+    //Handle unblock confirmation
     const handleUnblock = (contact) => {
         setConfirmUnblock(contact); // show popup
     };
@@ -23,7 +23,7 @@ export default function BlockedContactsSection({ onBack }) {
     const confirmUnblockAction = async () => {
         if (confirmUnblock) {
             //Call backend endpoint to unblock
-            await axios.put(`http://${import.meta.env.VITE_API_URL}/contacts/unblock/${confirmUnblock.id}`);
+            await axios.put(`${import.meta.env.VITE_API_URL}/contacts/unblock/${confirmUnblock.id}`);
             removeContact(confirmUnblock.id); // or update contact.blocked=false if you prefer keeping it
             setConfirmUnblock(null);
         }
