@@ -40,8 +40,6 @@ This project **is not commercial** and is used for personal learning and skill i
 
 ## 📸 Preview
 
-(Add a screenshot here if you want)
-
 ## 📝 How to Use
 
 1. Open the project in any browser  
