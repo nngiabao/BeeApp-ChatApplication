@@ -3,7 +3,7 @@
 This is a simple certificate generator application created as a practice project.  
 It allows users to generate customizable certificates with a clean UI and download them as images or PDF.  
 This project **is not commercial** and is used for personal learning and skill improvement.
-[Link Text](https://beeapp6688.vercel.app/)
+[Project website](https://beeapp6688.vercel.app/)
 ## 🚀 Features
 
 - Generate certificates with custom:
