@@ -11,7 +11,7 @@ export default function AnalyticsPanel() {
     });
 
     useEffect(() => {
-        fetch(`http://${import.meta.env.VITE_API_URL}/admin/dashboard/stats`)
+        fetch(`${import.meta.env.VITE_API_URL}/admin/dashboard/stats`)
             .then(res => res.json())
             .then(data => setStats(data))
             .catch(console.error);

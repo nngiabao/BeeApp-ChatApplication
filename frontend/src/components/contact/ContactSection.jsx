@@ -15,7 +15,7 @@ export default function ContactSection() {
     useEffect(() => {
         if (!user?.id) return;
 
-        fetch(`http://${import.meta.env.VITE_API_URL}/contacts/user/${user.id}`)
+        fetch(`${import.meta.env.VITE_API_URL}/contacts/user/${user.id}`)
             .then((res) => res.json())
             .then((data) => setContacts(data.data || []))
             .catch(console.error)

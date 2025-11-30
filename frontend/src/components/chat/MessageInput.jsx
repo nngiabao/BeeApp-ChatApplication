@@ -59,7 +59,7 @@ export default function MessageInput() {
             formData.append("type", "file");
 
             // Upload to backend → AWS S3
-            const res = await fetch("http://${import.meta.env.VITE_API_URL}/aws/upload", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/aws/upload`, {
                 method: "POST",
                 body: formData,
             });

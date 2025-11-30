@@ -18,7 +18,7 @@ export default function AddContactPanel({ onBack }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`http://${import.meta.env.VITE_API_URL}/contacts/add`, {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/contacts/add`, {
                 userId: user.id, // from context
                 lookupValue: contact.lookUp,
                 alias: contact.name

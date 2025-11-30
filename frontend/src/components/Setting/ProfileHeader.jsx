@@ -19,12 +19,12 @@ export default function ProfileHeader() {
 
         setUploading(true);
         try {
-            // 1️⃣ Upload to S3 via backend
+            //Upload to S3 via backend
             const formData = new FormData();
             formData.append("file", file);
             formData.append("type", "invidual"); // store under /individual/ folder
 
-            const res = await fetch("http://${import.meta.env.VITE_API_URL}/aws/upload", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/aws/upload`, {
                 method: "POST",
                 body: formData,
             });
@@ -32,10 +32,10 @@ export default function ProfileHeader() {
             if (!res.ok) throw new Error("Upload failed");
             const imageUrl = await res.text(); // backend returns the URL
 
-            // 2️⃣ Update local preview
+            //Update local preview
             setPreview(imageUrl);
 
-            // 4️⃣ Update user in context (frontend)
+            //  Update user in context (frontend)
             updateUser({ profilePicture: imageUrl });
             alert("Profile photo updated successfully!");
         } catch (err) {

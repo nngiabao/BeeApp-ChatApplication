@@ -6,7 +6,7 @@ export default function TicketPanel({ ticket, close }) {
 
     // Load responses
     const loadResponses = async () => {
-        const res = await fetch(`http://${import.meta.env.VITE_API_URL}/supports/${ticket.id}/responses`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/supports/${ticket.id}/responses`);
         const data = await res.json();
         setResponses(data.data || []);
     };
@@ -20,7 +20,7 @@ export default function TicketPanel({ ticket, close }) {
         if (!reply.trim()) return;
 
         const res = await fetch(
-            `http://${import.meta.env.VITE_API_URL}/supports/${ticket.id}/reply?senderId=${ticket.userId}&senderType=USER&message=${encodeURIComponent(
+            `${import.meta.env.VITE_API_URL}/supports/${ticket.id}/reply?senderId=${ticket.userId}&senderType=USER&message=${encodeURIComponent(
                 reply
             )}`,
             { method: "POST" }

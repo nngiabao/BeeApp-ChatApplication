@@ -66,7 +66,7 @@ export default function SettingsPanel() {
         formData.append("file", file);
 
         try {
-            const res = await fetch(`http://${import.meta.env.VITE_API_URL}/users/${user.id}/profile-picture/upload`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${user.id}/profile-picture/upload`, {
                 method: "PUT",
                 body: formData,
             });
@@ -104,7 +104,7 @@ export default function SettingsPanel() {
 
     const handleLogout = async () => {
         try {
-            await fetch(`http://${import.meta.env.VITE_API_URL}/users/logout`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/users/logout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username: user.username }),
