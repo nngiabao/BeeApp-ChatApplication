@@ -34,7 +34,7 @@ export default function Signup() {
             });
 
             setMessage("User registered successfully!");
-            console.log("Response:", res.data);
+
         } catch (err) {
             console.error("Error registering user:", err);
             setMessage("Registration failed. Check console for details.");

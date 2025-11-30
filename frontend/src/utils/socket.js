@@ -14,7 +14,6 @@ export const isConnected = () => connected;
 // 🔌 Connect WebSocket (connect only once)
 export const connectWebSocket = () => {
     if (stompClient && connected) {
-        console.log("⚡ WebSocket already connected");
         return;
     }
 
@@ -27,7 +26,6 @@ export const connectWebSocket = () => {
         {},
         () => {
             connected = true;
-            console.log("✅ WebSocket connected");
 
             connectCallbackQueue.forEach((cb) => cb());
             connectCallbackQueue = [];
@@ -37,7 +35,6 @@ export const connectWebSocket = () => {
             console.error("❌ WebSocket connection failed:", error);
 
             setTimeout(() => {
-                console.log("🔄 Reconnecting WebSocket...");
                 connectWebSocket();
             }, 3000);
         }
@@ -50,7 +47,6 @@ export const subscribeToChat = (chatId, onMessageReceived) => {
         if (activeSubscriptions[chatId]) return;
 
         const topic = `/topic/chat/${chatId}`;
-        console.log(`📡 Subscribing to ${topic}`);
 
         activeSubscriptions[chatId] = stompClient.subscribe(topic, (msg) => {
             try {
@@ -72,7 +68,6 @@ export const unsubscribeFromChat = (chatId) => {
     if (sub) {
         sub.unsubscribe();
         delete activeSubscriptions[chatId];
-        console.log(`🚫 Unsubscribed from /topic/chat/${chatId}`);
     }
 };
 
@@ -99,7 +94,7 @@ export const sendMessage = (chatId, senderId, messageContent, messageType = "TEX
 
 export const disconnectWebSocket = () => {
     if (stompClient) {
-        stompClient.disconnect(() => console.log("🛑 WebSocket disconnected"));
+        stompClient.disconnect(() => console.log("WebSocket disconnected"));
     }
     stompClient = null;
     connected = false;

@@ -16,7 +16,6 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Logging in with:", form);
 
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_URL}/users/login`, {
@@ -26,7 +25,6 @@ export default function Login() {
 
             const userData = res.data.user; //JSON object
             setUser(userData);
-            console.log("Stored user object:", userData);
 
             setMessage(res.data.message);
             // navigate to home without needing to pass state

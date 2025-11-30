@@ -12,18 +12,12 @@ export default function AddMemberModal({
 
     const [search, setSearch] = useState("");
 
-    // DEBUG LOGS
-    console.log("CONTACTS:", contacts);
-    console.log("GROUP MEMBER IDS:", groupMemberIds);
-
     //Contacts not in the group
     const available = contacts.filter(
         (c) => !groupMemberIds.includes(c.contactId)
     );
 
-    console.log("AVAILABLE CONTACTS:", available);
-
-    // 🔍 Filter by search
+    //Filter by search
     const filtered = available.filter((c) =>
         c.alias?.toLowerCase().includes(search.toLowerCase())
     );
@@ -48,7 +42,7 @@ export default function AddMemberModal({
             <div className="bg-white w-72 rounded-lg shadow-lg p-4">
                 <h3 className="text-lg font-semibold mb-3">Add Member</h3>
 
-                {/* 🔍 Search */}
+                {/*  Search */}
                 <input
                     type="text"
                     placeholder="Search contacts..."

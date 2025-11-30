@@ -24,8 +24,6 @@ export default function AddContactPanel({ onBack }) {
                 alias: contact.name
             });
 
-            console.log("Response:", res.data);
-
             //If backend sends new contact in response, add it to global context
             addContact(res.data.data);
             setMessage("Contact added successfully!");

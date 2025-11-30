@@ -44,13 +44,11 @@ export function UserProvider({ children }) {
 
             if (res.ok && data.data) {
                 setUser(data.data); //update local user context
-                console.log("User updated:", data.data);
+
             } else {
-                console.error("❌ Update failed:", data.message);
                 alert(data.message || "Failed to update user");
             }
         } catch (err) {
-            console.error("❌ Error updating user:", err);
             alert("Server error while updating user");
         }
     };

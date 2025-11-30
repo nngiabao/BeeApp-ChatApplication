@@ -56,7 +56,6 @@ export default function AddGroupPanel({ onBack }) {
             if (!res.ok) throw new Error("Failed to create group");
             const data = await res.json();
 
-            console.log("Group created:", data);
             alert("Group created successfully!");
             onBack(); // go back or refresh list
         } catch (err) {
