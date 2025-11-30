@@ -13,7 +13,7 @@ public class AwsConfig {
 
     @Bean
     public S3Client s3Client() {
-        Dotenv dotenv = Dotenv.configure().filename(".env").load();
+        Dotenv dotenv = Dotenv.configure().filename("aws.env").load();
 
         AwsBasicCredentials credentials = AwsBasicCredentials.create(
                 dotenv.get("AWS_ACCESS_KEY"),

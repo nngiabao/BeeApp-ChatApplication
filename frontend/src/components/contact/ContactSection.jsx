@@ -27,7 +27,7 @@ export default function ContactSection() {
         try {
             const endpoint = contact.blocked
                 ? `${import.meta.env.VITE_API_URL}/contacts/unblock/${contact.id}`
-                : `${import.meta.env.VITE_API_URL}/block/${contact.id}`;
+                : `${import.meta.env.VITE_API_URL}/contacts/block/${contact.id}`;
 
             const res = await fetch(endpoint, { method: "PUT" });
             if (!res.ok) {
