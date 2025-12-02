@@ -23,6 +23,10 @@ This project **is not commercial** and is used for personal learning and skill i
 - **Frontend:** HTML, CSS, JavaScript
 - **Rendering:** HTML Canvas
 - **Fonts/Assets:** CDN-based for easy loading
+- **Backend:** Spring Boot
+- **Database:** PostgreSQL
+- **Hosting:** AWS EC2 
+- **Storage:** AWS S3
 
 ## 📁 Project Structure
 
