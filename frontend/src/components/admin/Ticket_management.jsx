@@ -47,7 +47,7 @@ export default function TicketManagement() {
             setNewResponse("");
             await loadResponses(selectedTicket.id);
         } catch (error) {
-            console.error("❌ Error sending reply:", error);
+            console.error("Error sending reply:", error);
             alert("Failed to send response. Please try again.");
         }
     };

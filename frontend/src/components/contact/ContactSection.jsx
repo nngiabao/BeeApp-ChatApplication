@@ -107,7 +107,7 @@ export default function ContactSection() {
             addChatToList(enrichedChat);
             selectChat(enrichedChat);
         } catch (err) {
-            console.error("Error creating/opening chat:", err);
+            console.error("Error creating/opening chat:");
         }
     };
 

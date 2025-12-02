@@ -31,7 +31,7 @@ export default function Login() {
             if(userData.accountType === "ADMIN") navigate("/admin", { state: userData });
             else navigate("/home");
         } catch (err) {
-            console.error("Error logging in:", err);
+
             if (err.response?.status === 400) {
                 setMessage("Invalid username or password.");
             } else {

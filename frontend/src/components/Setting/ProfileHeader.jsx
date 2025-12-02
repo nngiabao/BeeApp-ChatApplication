@@ -39,7 +39,7 @@ export default function ProfileHeader() {
             updateUser({ profilePicture: imageUrl });
             alert("Profile photo updated successfully!");
         } catch (err) {
-            console.error("Error uploading image:", err);
+
             alert("Failed to upload image.");
         } finally {
             setUploading(false);

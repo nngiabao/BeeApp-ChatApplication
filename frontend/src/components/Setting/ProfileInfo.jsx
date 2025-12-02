@@ -121,7 +121,7 @@ export default function ProfileInfo({ setActiveTicket }) {
             setMessage("");
             setShowTicketModal(false);
         } catch (err) {
-            console.error("Ticket submission failed:", err);
+
             alert("Failed to submit ticket");
         }
     };

@@ -69,7 +69,7 @@ export function UserProvider({ children }) {
                 alert(data.message || "Failed to change password");
             }
         } catch (err) {
-            console.error("❌ Error changing password:", err);
+            console.error(" Error changing password:", err);
             alert("Server error while changing password");
         }
     };

@@ -154,7 +154,7 @@ export function ChatProvider({ children }) {
                 }));
             }
         } catch (err) {
-            console.error("❌ Failed to load group members:", err);
+            console.error("Failed to load group members:",err);
         }
     };
     // 📨 Send message
@@ -190,7 +190,7 @@ export function ChatProvider({ children }) {
                 setChatList(data);
             }
         } catch (err) {
-            console.error("❌ Failed to reload chat list:", err);
+            console.error(" Failed to reload chat list:");
         }
     };
     //

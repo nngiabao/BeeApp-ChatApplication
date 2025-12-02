@@ -32,7 +32,7 @@ export const connectWebSocket = () => {
         },
         (error) => {
             connected = false;
-            console.error("❌ WebSocket connection failed:", error);
+            console.error(" WebSocket connection failed:", error);
 
             setTimeout(() => {
                 connectWebSocket();
@@ -53,7 +53,7 @@ export const subscribeToChat = (chatId, onMessageReceived) => {
                 const payload = JSON.parse(msg.body);
                 onMessageReceived(payload);
             } catch (err) {
-                console.error("❌ Failed to parse WS message:", err);
+                console.error(" Failed to parse WS message:", err);
             }
         });
     };
