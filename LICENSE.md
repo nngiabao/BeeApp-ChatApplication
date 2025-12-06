@@ -34,5 +34,5 @@ This software is provided **"as is"**, without warranty of any kind, express or 
 
 For permissions or inquiries, please contact:  
 **Nguyen Bao**  
-📧 [your email or GitHub profile link here]
+📧 2905864@vikes.csuohio.edu
 
